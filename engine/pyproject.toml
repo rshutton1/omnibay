@@ -1,0 +1,20 @@
+[project]
+name = "omnibay-engine"
+version = "0.1.0"
+description = "MechWarrior Online mech lab — build calculation engine"
+# Pure standard library, so it runs unmodified inside Pyodide in the browser.
+requires-python = ">=3.9"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["omnibay*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
