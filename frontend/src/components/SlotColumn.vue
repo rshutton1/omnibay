@@ -8,7 +8,9 @@
  * down the edge so slot counts can be read off directly rather than inferred
  * from a "10/12" label.
  */
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import ArmorStepper from '@/components/ArmorStepper.vue'
+import { useEquipmentDrag, type DragPayload } from '@/composables/useEquipmentDrag'
 import type { ComponentResult, DescribedItem } from '@/types'
 
 const props = defineProps<{
@@ -21,7 +23,21 @@ const props = defineProps<{
 const emit = defineEmits<{
   (event: 'remove-item', index: number): void
   (event: 'set-armor', value: number, rear: boolean): void
+  (event: 'lift-item', payload: DragPayload, pointerEvent: PointerEvent): void
 }>()
+
+const { drag, registerDropZone } = useEquipmentDrag()
+
+// The whole column is the drop zone; register it so the drag layer can hit-test.
+const root = ref<HTMLElement | null>(null)
+watch(root, (element) => registerDropZone(props.component.name, element))
+onBeforeUnmount(() => registerDropZone(props.component.name, null))
+
+const isDropTarget = computed(
+  () => drag.active && drag.validTargets.includes(props.component.name),
+)
+const isHovered = computed(() => drag.active && drag.hovered === props.component.name)
+const isRejected = computed(() => drag.active && !isDropTarget.value)
 
 interface Block {
   key: string
@@ -129,6 +145,29 @@ const hardpoints = computed(() =>
 )
 
 // Front and rear armor draw from one pool, so each caps at what the other leaves.
+const unallocatedArmor = computed(() =>
+  Math.max(0, props.component.max_armor - props.component.armor - props.component.rear_armor),
+)
+
+/** Installed equipment can be lifted out and dropped into another component. */
+function onBlockPointerDown(event: PointerEvent, block: Block) {
+  if (block.removableIndex === null) return
+  const item = props.component.items[block.removableIndex]
+  if (!item) return
+  emit(
+    'lift-item',
+    {
+      itemId: item.id,
+      label: item.display_name,
+      category: item.category,
+      slots: item.slots,
+      tons: item.tons,
+      origin: { component: props.component.name, index: block.removableIndex },
+    },
+    event,
+  )
+}
+
 const frontMax = computed(() => props.component.max_armor - props.component.rear_armor)
 const rearMax = computed(() => props.component.max_armor - props.component.armor)
 const armorTotal = computed(() => props.component.armor + props.component.rear_armor)
@@ -141,7 +180,17 @@ const frontShare = computed(() =>
 </script>
 
 <template>
-  <article class="column panel clip" :class="{ targeted, over: overflowing }">
+  <article
+    ref="root"
+    class="column panel clip"
+    :class="{
+      targeted,
+      over: overflowing,
+      'drop-ok': isDropTarget,
+      'drop-hover': isHovered,
+      'drop-no': isRejected,
+    }"
+  >
     <header>
       <span class="abbr mono">{{ component.abbreviation }}</span>
       <span class="name">{{ component.label }}</span>
@@ -158,30 +207,22 @@ const frontShare = computed(() =>
         <div class="armor-fill" :style="{ width: `${armorPercent}%` }" />
         <div class="armor-front" :style="{ width: `${frontShare}%` }" />
       </div>
-      <div class="armor-controls mono">
-        <label>
-          <span class="faint">F</span>
-          <input
-            type="range"
-            min="0"
-            :max="frontMax"
-            :value="component.armor"
-            @input="emit('set-armor', Number(($event.target as HTMLInputElement).value), false)"
-          />
-          <output>{{ component.armor }}</output>
-        </label>
-        <label v-if="hasRearArmor">
-          <span class="faint">R</span>
-          <input
-            type="range"
-            min="0"
-            :max="rearMax"
-            :value="component.rear_armor"
-            @input="emit('set-armor', Number(($event.target as HTMLInputElement).value), true)"
-          />
-          <output>{{ component.rear_armor }}</output>
-        </label>
-        <span class="cap faint">/ {{ component.max_armor }}</span>
+      <div class="armor-controls">
+        <ArmorStepper
+          label="F"
+          :value="component.armor"
+          :max="frontMax"
+          :available="unallocatedArmor"
+          @set="(value) => emit('set-armor', value, false)"
+        />
+        <ArmorStepper
+          v-if="hasRearArmor"
+          label="R"
+          :value="component.rear_armor"
+          :max="rearMax"
+          :available="unallocatedArmor"
+          @set="(value) => emit('set-armor', value, true)"
+        />
       </div>
     </div>
 
@@ -198,6 +239,7 @@ const frontShare = computed(() =>
           :class="[`cat-${block.category}`, { removable: block.removableIndex !== null }]"
           :style="{ height: `calc(var(--cell) * ${block.slots})` }"
           :title="`${block.label} — ${block.slots} slot${block.slots === 1 ? '' : 's'}`"
+          @pointerdown="onBlockPointerDown($event, block)"
         >
           <span class="spine" />
           <span class="text">
@@ -309,32 +351,24 @@ header {
 }
 .armor-controls {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 10px;
+  flex-direction: column;
+  gap: 2px;
 }
-.armor-controls label {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  flex: 1;
-  min-width: 0;
+
+/* Drag feedback: viable targets lift, the one under the cursor is unmistakable,
+   and anything that cannot take the item recedes. */
+.column.drop-ok {
+  border-color: var(--border-hot);
 }
-.armor-controls input {
-  flex: 1;
-  min-width: 0;
-  height: 12px;
-  padding: 0;
-  background: none;
-  border: none;
-  accent-color: var(--accent);
+.column.drop-hover {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent-dim);
 }
-.armor-controls output {
-  width: 3ch;
-  text-align: right;
+.column.drop-no {
+  opacity: 0.4;
 }
-.cap {
-  white-space: nowrap;
+.block.removable {
+  cursor: grab;
 }
 
 /* ---- slot grid ---- */

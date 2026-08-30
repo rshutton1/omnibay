@@ -82,6 +82,24 @@ export const useMechlabStore = defineStore('mechlab', {
       this.recalculate()
     },
 
+    /**
+     * Relocate an installed item between components.
+     *
+     * Done as one mutation so the engine recalculates once, rather than
+     * flashing through an intermediate state where the item exists in neither
+     * component (or briefly in both).
+     */
+    moveItem(from: string, index: number, to: string) {
+      if (!this.build || from === to) return
+      const source = this.build.components[from]
+      const target = this.build.components[to]
+      if (!source || !target) return
+      const [entry] = source.items.splice(index, 1)
+      if (!entry) return
+      target.items.push(entry)
+      this.recalculate()
+    },
+
     removeItem(component: string, index: number) {
       if (!this.build) return
       this.build.components[component].items.splice(index, 1)

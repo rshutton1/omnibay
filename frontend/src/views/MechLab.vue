@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import DragGhost from '@/components/DragGhost.vue'
 import EngineBoot from '@/components/EngineBoot.vue'
 import EquipmentRail from '@/components/EquipmentRail.vue'
 import SlotColumn from '@/components/SlotColumn.vue'
 import StatsRail from '@/components/StatsRail.vue'
 import { engineIsReady } from '@/engine/runtime'
+import { beginDrag, type DragPayload } from '@/composables/useEquipmentDrag'
 import { useMechlabStore } from '@/stores/mechlab'
 
 const props = defineProps<{ reference: string }>()
@@ -64,6 +66,45 @@ const tonnageOverBy = computed(() => {
   if (!tonnage) return 0
   return Math.max(0, tonnage.used - tonnage.max)
 })
+
+/**
+ * Which components could take this payload right now.
+ *
+ * An item already installed somewhere is being *moved*, so its own component
+ * always qualifies (dropping it back is a no-op) and the slots it currently
+ * occupies do not count against a move within the same component.
+ */
+function targetsForPayload(payload: DragPayload): string[] {
+  const result = store.result
+  if (!result) return []
+  const item = store.equipment.find((candidate) => candidate.id === payload.itemId)
+  const hardpointType = item?.hardpoint_type ?? ''
+
+  return Object.values(result.components)
+    .filter((component) => {
+      if (payload.origin?.component === component.name) return true
+      if (component.free_slots < Math.max(1, payload.slots)) return false
+      if (!hardpointType) return true
+      const capacity = component.hardpoint_capacity[hardpointType] ?? 0
+      const used = component.hardpoints[hardpointType] ?? 0
+      return used < capacity
+    })
+    .map((component) => component.name)
+}
+
+/** Begin dragging, whether from the catalogue or out of a component. */
+function onLiftItem(payload: DragPayload, event: PointerEvent) {
+  const targets = targetsForPayload(payload)
+  if (!targets.length) return
+  beginDrag(event, payload, targets, (target, dropped) => {
+    if (dropped.origin) {
+      if (dropped.origin.component === target) return
+      store.moveItem(dropped.origin.component, dropped.origin.index, target)
+    } else {
+      store.addItem(target, dropped.itemId)
+    }
+  })
+}
 
 const armorPct = computed(() =>
   store.result && store.result.armor.max_points
@@ -141,6 +182,7 @@ const armorPct = computed(() =>
               :targeted="targets.includes(name)"
               @remove-item="(index) => store.removeItem(name, index)"
               @set-armor="(value, rear) => store.setArmor(name, value, rear)"
+              @lift-item="onLiftItem"
             />
           </template>
         </div>
@@ -166,10 +208,13 @@ const armorPct = computed(() =>
         :faction="store.mech.faction"
         @install="store.addItem"
         @hover-targets="(components) => (targets = components)"
+        @lift-item="onLiftItem"
         @set-upgrade="store.setUpgrade"
         @artemis="store.toggleArtemis"
       />
     </div>
+
+    <DragGhost />
   </div>
 </template>
 

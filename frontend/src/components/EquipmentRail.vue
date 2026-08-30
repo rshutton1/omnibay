@@ -8,6 +8,7 @@
  * single click on the destination you want.
  */
 import { computed, ref } from 'vue'
+import type { DragPayload } from '@/composables/useEquipmentDrag'
 import type { BuildState, CalcResult, EquipmentItem, UpgradeOption } from '@/types'
 
 const props = defineProps<{
@@ -21,6 +22,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (event: 'install', component: string, itemId: number): void
   (event: 'hover-targets', components: string[]): void
+  (event: 'lift-item', payload: DragPayload, pointerEvent: PointerEvent): void
   (event: 'set-upgrade', category: 'armor' | 'structure' | 'heatsinks', itemId: number): void
   (event: 'artemis', value: boolean): void
 }>()
@@ -87,6 +89,26 @@ function targetsFor(item: EquipmentItem): string[] {
   return componentOrder.filter((name) => fitsIn(item, name))
 }
 
+/** Start a drag out of the catalogue. Clicks on the chips are unaffected. */
+function onRowPointerDown(event: PointerEvent, item: EquipmentItem) {
+  // Chips are buttons; let them handle their own clicks.
+  if ((event.target as HTMLElement).closest('button')) return
+  emit(
+    'lift-item',
+    {
+      itemId: item.id,
+      label: item.display_name,
+      category: item.item_type === 'weapon' && item.hardpoint_type
+        ? `weapon-${item.hardpoint_type}`
+        : item.item_type,
+      slots: item.slots,
+      tons: item.tons,
+      origin: null,
+    },
+    event,
+  )
+}
+
 /** Colour the row by what kind of thing it is, matching the slot grid. */
 function toneFor(item: EquipmentItem): string {
   if (item.item_type === 'ammo') return 'cat-ammo'
@@ -119,8 +141,9 @@ function toneFor(item: EquipmentItem): string {
         <li
           v-for="item in visible"
           :key="item.id"
-          :class="toneFor(item)"
+          :class="[toneFor(item), { draggable: targetsFor(item).length }]"
           @mouseenter="emit('hover-targets', targetsFor(item))"
+          @pointerdown="onRowPointerDown($event, item)"
         >
           <div class="row">
             <span class="spine" />
@@ -226,6 +249,9 @@ function toneFor(item: EquipmentItem): string {
   background: var(--bg-cell);
   border-radius: 2px;
   padding: 4px 5px 5px;
+}
+.items li.draggable .name {
+  cursor: grab;
 }
 .row {
   display: flex;

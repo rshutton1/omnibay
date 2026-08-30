@@ -251,3 +251,12 @@ th {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--border-hot);
 }
+
+/* While an item is being dragged, nothing should select or show a text caret. */
+body.dragging-equipment {
+  user-select: none;
+  cursor: grabbing;
+}
+body.dragging-equipment * {
+  cursor: grabbing !important;
+}
