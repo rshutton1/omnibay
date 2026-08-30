@@ -6,8 +6,10 @@ import EngineBoot from '@/components/EngineBoot.vue'
 import EquipmentRail from '@/components/EquipmentRail.vue'
 import SlotColumn from '@/components/SlotColumn.vue'
 import StatsRail from '@/components/StatsRail.vue'
+import WeaponTooltipCard from '@/components/WeaponTooltip.vue'
 import { engineIsReady } from '@/engine/runtime'
 import { beginDrag, type DragPayload } from '@/composables/useEquipmentDrag'
+import { useWeaponTooltip } from '@/composables/useWeaponTooltip'
 import { useMechlabStore } from '@/stores/mechlab'
 
 const props = defineProps<{ reference: string }>()
@@ -66,6 +68,28 @@ const tonnageOverBy = computed(() => {
   if (!tonnage) return 0
   return Math.max(0, tonnage.used - tonnage.max)
 })
+
+const {
+  weaponTooltip,
+  showWeaponTooltip,
+  hideWeaponTooltip,
+  resetWeaponTooltipCache,
+} = useWeaponTooltip()
+
+function onHoverWeapon(itemId: number | null, x: number, y: number) {
+  if (itemId === null || !store.mech) {
+    hideWeaponTooltip()
+    return
+  }
+  showWeaponTooltip(store.mech.name, itemId, store.build, x, y)
+}
+
+// Quirks can change with omnipods and upgrades, so cached cards go stale
+// whenever the build does.
+watch(
+  () => store.result,
+  () => resetWeaponTooltipCache(),
+)
 
 /**
  * Which components could take this payload right now.
@@ -183,6 +207,7 @@ const armorPct = computed(() =>
               @remove-item="(index) => store.removeItem(name, index)"
               @set-armor="(value, rear) => store.setArmor(name, value, rear)"
               @lift-item="onLiftItem"
+              @hover-weapon="onHoverWeapon"
             />
           </template>
         </div>
@@ -209,12 +234,19 @@ const armorPct = computed(() =>
         @install="store.addItem"
         @hover-targets="(components) => (targets = components)"
         @lift-item="onLiftItem"
+        @hover-weapon="onHoverWeapon"
         @set-upgrade="store.setUpgrade"
         @artemis="store.toggleArtemis"
       />
     </div>
 
     <DragGhost />
+    <WeaponTooltipCard
+      v-if="weaponTooltip.tooltip"
+      :tooltip="weaponTooltip.tooltip"
+      :x="weaponTooltip.x"
+      :y="weaponTooltip.y"
+    />
   </div>
 </template>
 

@@ -11,19 +11,19 @@
 
 const BASE = import.meta.env.BASE_URL
 
-/** Python modules copied into `public/engine/omnibay/` by the bundle builder. */
-const ENGINE_MODULES = [
-  '__init__.py',
-  'constants.py',
-  'quirks.py',
-  'items.py',
-  'weapons.py',
-  'codec.py',
-  'loader.py',
-  'build.py',
-  'calculate.py',
-  'bridge.py',
-]
+/**
+ * The engine's module list comes from a manifest the bundle builder writes,
+ * rather than being repeated here. A hardcoded copy silently omits new modules
+ * and fails at import time in the browser.
+ */
+async function engineModules(): Promise<string[]> {
+  const response = await fetchOrThrow(`${BASE}engine/manifest.json`)
+  const manifest = (await response.json()) as { modules?: string[] }
+  if (!manifest.modules?.length) {
+    throw new EngineError('Engine manifest is empty — run `npm run bundle`.')
+  }
+  return manifest.modules
+}
 
 /** Game data the engine reads at startup. */
 const DATA_FILES = [
@@ -52,6 +52,7 @@ interface BridgeModule {
   get_omnipods(reference: string): string
   list_equipment(): string
   stock_build(reference: string): string
+  weapon_stats(reference: string, itemId: number, buildJson: string): string
   calculate(reference: string, buildJson: string): string
   export_code(reference: string, buildJson: string): string
   import_code(code: string): string
@@ -143,11 +144,13 @@ async function boot(): Promise<BridgeModule> {
       bytes: new Uint8Array(await (await fetchOrThrow(`${BASE}data/${file}`)).arrayBuffer()),
     })),
   )
-  const sourcePromise = Promise.all(
-    ENGINE_MODULES.map(async (file) => ({
-      file,
-      text: await (await fetchOrThrow(`${BASE}engine/omnibay/${file}`)).text(),
-    })),
+  const sourcePromise = engineModules().then((modules) =>
+    Promise.all(
+      modules.map(async (file) => ({
+        file,
+        text: await (await fetchOrThrow(`${BASE}engine/omnibay/${file}`)).text(),
+      })),
+    ),
   )
   // Neither is awaited yet; swallow rejections here so a failure surfaces at
   // the await below rather than as an unhandled promise rejection.

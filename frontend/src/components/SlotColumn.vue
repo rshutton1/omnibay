@@ -24,6 +24,7 @@ const emit = defineEmits<{
   (event: 'remove-item', index: number): void
   (event: 'set-armor', value: number, rear: boolean): void
   (event: 'lift-item', payload: DragPayload, pointerEvent: PointerEvent): void
+  (event: 'hover-weapon', itemId: number | null, x: number, y: number): void
 }>()
 
 const { drag, registerDropZone } = useEquipmentDrag()
@@ -149,6 +150,13 @@ const unallocatedArmor = computed(() =>
   Math.max(0, props.component.max_armor - props.component.armor - props.component.rear_armor),
 )
 
+/** Weapons get a detail card; everything else is self-explanatory. */
+function onBlockHover(event: MouseEvent, block: Block) {
+  if (!block.category.startsWith('weapon-') || block.removableIndex === null) return
+  const item = props.component.items[block.removableIndex]
+  if (item) emit('hover-weapon', item.id, event.clientX, event.clientY)
+}
+
 /** Installed equipment can be lifted out and dropped into another component. */
 function onBlockPointerDown(event: PointerEvent, block: Block) {
   if (block.removableIndex === null) return
@@ -240,6 +248,9 @@ const frontShare = computed(() =>
           :style="{ height: `calc(var(--cell) * ${block.slots})` }"
           :title="`${block.label} — ${block.slots} slot${block.slots === 1 ? '' : 's'}`"
           @pointerdown="onBlockPointerDown($event, block)"
+          @mouseenter="onBlockHover($event, block)"
+          @mousemove="onBlockHover($event, block)"
+          @mouseleave="emit('hover-weapon', null, 0, 0)"
         >
           <span class="spine" />
           <span class="text">

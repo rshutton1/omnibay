@@ -16,6 +16,7 @@ from omnibay import build as B
 from omnibay import codec
 from omnibay import items as I
 from omnibay.calculate import calculate_build
+from omnibay.weapon_stats import weapon_tooltip
 from omnibay.constants import COMPONENT_ORDER, WEIGHT_CLASS_ORDER
 from omnibay.loader import GameData
 from omnibay.quirks import finite_number
@@ -285,6 +286,46 @@ def calculate(reference: str, build_json: str) -> str:
     build = json.loads(build_json)
     B.apply_fixed_omnipods(data, mech, build)
     return _ok({"build": build, "result": calculate_build(data, mech, build)})
+
+
+@_guard
+def weapon_stats(reference: str, item_id: int, build_json: str = "") -> str:
+    """Per-weapon detail for the hover card, with this build's quirks applied.
+
+    `build_json` may be empty, in which case the variant's stock loadout is
+    used — enough for browsing the catalogue before committing to anything.
+    """
+    data = _require_data()
+    mech = _require_mech(reference)
+    item = data.item(item_id)
+    if not item:
+        return _err("Unknown item: {0}".format(item_id))
+
+    build = json.loads(build_json) if build_json else B.build_from_stock_loadout(data, mech)
+    quirks = B.effective_quirks(data, mech, build)
+    modules = _installed_modules(data, mech, build)
+
+    tooltip = weapon_tooltip(data, item, quirks, modules)
+    if tooltip is None:
+        return _err("Not a weapon: {0}".format(item_id))
+    return _ok(tooltip)
+
+
+def _installed_modules(data: GameData, mech: Dict[str, Any], build: Dict[str, Any]):
+    """Modules mounted on the mech; only these can rewrite weapon stats."""
+    definition = B.effective_definition(data, mech, build)
+    modules = []
+    for name in COMPONENT_ORDER:
+        comp_def = (definition.get("components") or {}).get(name) or {}
+        build_comp = (build.get("components") or {}).get(name) or {}
+        ids = list(comp_def.get("fixed") or []) + [
+            entry.get("item_id") for entry in build_comp.get("items") or ()
+        ]
+        for item_id in ids:
+            item = data.item(item_id)
+            if item and item.get("item_type") == "module":
+                modules.append(item)
+    return modules
 
 
 @_guard

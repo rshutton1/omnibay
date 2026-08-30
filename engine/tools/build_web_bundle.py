@@ -29,18 +29,19 @@ RUNTIME_DATA_FILES = (
     "omnipods.json",
 )
 
-ENGINE_MODULES = (
-    "__init__.py",
-    "constants.py",
-    "quirks.py",
-    "items.py",
-    "weapons.py",
-    "codec.py",
-    "loader.py",
-    "build.py",
-    "calculate.py",
-    "bridge.py",
-)
+def engine_modules(engine_source: str) -> list:
+    """Every Python module in the engine package.
+
+    Discovered rather than listed: a hardcoded list silently omits new modules,
+    which surfaces in the browser as an import failure rather than a build
+    error. The manifest written alongside them lets the client stage exactly
+    this set without repeating it.
+    """
+    return sorted(
+        name
+        for name in os.listdir(engine_source)
+        if name.endswith(".py") and not name.startswith(".")
+    )
 
 
 def _megabytes(path: str) -> float:
@@ -75,13 +76,19 @@ def main() -> int:
         total += _megabytes(source)
     print("data      {0} files, {1:.1f} MB".format(len(RUNTIME_DATA_FILES), total))
 
-    for filename in ENGINE_MODULES:
-        source = os.path.join(engine_source, filename)
-        if not os.path.exists(source):
-            print("missing engine module: {0}".format(filename), file=sys.stderr)
-            return 1
-        shutil.copy2(source, os.path.join(engine_out, filename))
-    print("engine    {0} modules".format(len(ENGINE_MODULES)))
+    modules = engine_modules(engine_source)
+    if "bridge.py" not in modules:
+        print("engine package has no bridge.py", file=sys.stderr)
+        return 1
+    for filename in modules:
+        shutil.copy2(os.path.join(engine_source, filename), os.path.join(engine_out, filename))
+
+    # The client stages the engine from this manifest, so the two can never
+    # disagree about which modules exist.
+    manifest_path = os.path.join(args.out, "engine", "manifest.json")
+    with open(manifest_path, "w", encoding="utf-8") as handle:
+        json.dump({"modules": modules}, handle)
+    print("engine    {0} modules".format(len(modules)))
 
     # Precomputed so the mech browser needs no Python at all.
     data = GameData(data_source)

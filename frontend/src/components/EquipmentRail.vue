@@ -23,6 +23,7 @@ const emit = defineEmits<{
   (event: 'install', component: string, itemId: number): void
   (event: 'hover-targets', components: string[]): void
   (event: 'lift-item', payload: DragPayload, pointerEvent: PointerEvent): void
+  (event: 'hover-weapon', itemId: number | null, x: number, y: number): void
   (event: 'set-upgrade', category: 'armor' | 'structure' | 'heatsinks', itemId: number): void
   (event: 'artemis', value: boolean): void
 }>()
@@ -89,6 +90,11 @@ function targetsFor(item: EquipmentItem): string[] {
   return componentOrder.filter((name) => fitsIn(item, name))
 }
 
+function onRowHover(event: MouseEvent, item: EquipmentItem) {
+  if (item.item_type !== 'weapon') return
+  emit('hover-weapon', item.id, event.clientX, event.clientY)
+}
+
 /** Start a drag out of the catalogue. Clicks on the chips are unaffected. */
 function onRowPointerDown(event: PointerEvent, item: EquipmentItem) {
   // Chips are buttons; let them handle their own clicks.
@@ -143,6 +149,8 @@ function toneFor(item: EquipmentItem): string {
           :key="item.id"
           :class="[toneFor(item), { draggable: targetsFor(item).length }]"
           @mouseenter="emit('hover-targets', targetsFor(item))"
+          @mousemove="onRowHover($event, item)"
+          @mouseleave="emit('hover-weapon', null, 0, 0)"
           @pointerdown="onRowPointerDown($event, item)"
         >
           <div class="row">
