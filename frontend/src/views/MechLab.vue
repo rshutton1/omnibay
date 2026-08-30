@@ -57,6 +57,14 @@ async function importCode() {
   }
 }
 
+// Derived from `used` and `max` rather than read from the engine payload: a
+// missing field would otherwise throw during render and blank the page.
+const tonnageOverBy = computed(() => {
+  const tonnage = store.result?.tonnage
+  if (!tonnage) return 0
+  return Math.max(0, tonnage.used - tonnage.max)
+})
+
 const armorPct = computed(() =>
   store.result && store.result.armor.max_points
     ? Math.round((store.result.armor.points / store.result.armor.max_points) * 100)
@@ -83,7 +91,7 @@ const armorPct = computed(() =>
         <strong>
           {{
             store.result.tonnage.overweight
-              ? `+${store.result.tonnage.over_by.toFixed(2)}`
+              ? `+${tonnageOverBy.toFixed(2)}`
               : store.result.tonnage.free.toFixed(2)
           }}
         </strong>

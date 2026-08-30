@@ -11,6 +11,12 @@ import type { CalcResult } from '@/types'
 
 const props = defineProps<{ result: CalcResult }>()
 
+// Derived rather than read from the payload, for the same reason as in MechLab:
+// the render must not depend on a field the engine might not send.
+const overBy = computed(() =>
+  Math.max(0, props.result.tonnage.used - props.result.tonnage.max),
+)
+
 const tonnagePercent = computed(() =>
   props.result.tonnage.max
     ? Math.min(100, (props.result.tonnage.used / props.result.tonnage.max) * 100)
@@ -71,7 +77,7 @@ const firepower = computed(() => [
         <div class="track"><div class="fill" :style="{ width: `${tonnagePercent}%` }" /></div>
         <div class="split mono" :class="result.tonnage.overweight ? 'danger-text' : 'faint'">
           <template v-if="result.tonnage.overweight">
-            over by {{ result.tonnage.over_by.toFixed(2) }}t — build is invalid
+            over by {{ overBy.toFixed(2) }}t — build is invalid
           </template>
           <template v-else>
             equipment {{ result.tonnage.equipment.toFixed(1) }} · structure
