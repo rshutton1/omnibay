@@ -9,13 +9,13 @@ import { reactive, readonly } from 'vue'
 import { engine } from '@/engine/client'
 import { engineIsReady } from '@/engine/runtime'
 import type { BuildState } from '@/types'
-import type { WeaponTooltip } from '@/types.weapon'
+import type { ItemTooltip } from '@/types.weapon'
 
 /** Pointer must rest on a weapon this long before the card is fetched. */
 const HOVER_DELAY_MS = 180
 
 interface TooltipState {
-  tooltip: WeaponTooltip | null
+  tooltip: ItemTooltip | null
   x: number
   y: number
 }
@@ -25,7 +25,7 @@ const state = reactive<TooltipState>({ tooltip: null, x: 0, y: 0 })
 let hoverTimer: ReturnType<typeof setTimeout> | null = null
 /** Guards against a slow response for a weapon the pointer has already left. */
 let requestToken = 0
-const cache = new Map<string, WeaponTooltip>()
+const cache = new Map<string, ItemTooltip>()
 
 function cancelPending() {
   if (hoverTimer) clearTimeout(hoverTimer)

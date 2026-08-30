@@ -557,17 +557,25 @@ def _pair(base: float, final: float, places: int = 2) -> Dict[str, Any]:
     }
 
 
-def critical_chances(item: Optional[Item]) -> List[float]:
+def critical_chances(
+    item: Optional[Item], additions: Optional[Sequence[float]] = None
+) -> List[float]:
+    """Per-slot critical chance, including any equipment bonus.
+
+    A value of exactly -1 means the weapon cannot crit that slot at all, and
+    stays -1 rather than being shifted by a bonus.
+    """
     raw = str((item or {}).get("stats", {}).get("critChanceIncrease") or "")
+    base = [_to_float(part) for part in raw.split(",") if part.strip()]
+    additions = list(additions or ())
+    size = max(len(base), len(additions))
     values = []
-    for part in raw.split(","):
-        part = part.strip()
-        if not part:
+    for index in range(size):
+        chance = base[index] if index < len(base) else 0.0
+        if abs(chance + 1) < 0.0001:
+            values.append(-1.0)
             continue
-        try:
-            values.append(float(part))
-        except ValueError:
-            continue
+        values.append(chance + (additions[index] if index < len(additions) else 0.0))
     return values if any(v for v in values) else []
 
 
@@ -586,6 +594,8 @@ def weapon_tooltip(
     modules = list(modules or ())
     effects = collect_weapon_quirk_effects(item, quirks)
     totals = effects["totals"]
+    equipment = collect_equipment_weapon_effects(item, modules)
+    equipment_totals = equipment["totals"]
 
     base_damage = max(0.0, weapon_total_damage(data, item, True, []))
     final_damage = max(0.0, weapon_total_damage(data, item, True, modules))
@@ -603,10 +613,15 @@ def weapon_tooltip(
     final_cycle = final_expected if final_expected is not None else final_timing["cycle"]
 
     base_ranges = weapon_range_profile(item, 0.0)
-    final_ranges = weapon_range_profile(item, totals["range_bonus"])
+    # Quirk and equipment range bonuses add before scaling.
+    final_ranges = weapon_range_profile(
+        item, totals["range_bonus"] + equipment_totals["range_bonus"]
+    )
 
     base_velocity = max(0.0, finite_number(stats.get("speed")))
-    final_velocity = base_velocity * (1 + totals["velocity_bonus"])
+    final_velocity = base_velocity * (
+        1 + totals["velocity_bonus"] + equipment_totals["speed_bonus"]
+    )
 
     profile = weapon_firing_profile(item, modules)
     continuous = is_continuous_per_second(item)
@@ -621,8 +636,10 @@ def weapon_tooltip(
         rate_rows["hps"] = _pair(base_heat / base_cycle, final_heat / final_cycle)
 
     payload: Dict[str, Any] = {
+        "kind": "weapon",
         "id": item.get("id"),
         "name": I.item_display_name(item),
+        "description": str(item.get("description") or "").strip(),
         "category": "weapon-{0}".format(I.equipment_hardpoint_type(item) or "other"),
         "hardpoint_type": I.equipment_hardpoint_type(item),
         "tons": I.item_tons(item),
@@ -634,6 +651,7 @@ def weapon_tooltip(
         "shots": profile["display_shots"],
         "shot_interval": round(profile["shot_delay"], 3) if profile["shot_delay"] > 0 else None,
         "continuous": continuous,
+        "equipment_effects": equipment["sources"],
         "applied_effects": [
             {
                 "name": entry["display_name"],
@@ -670,8 +688,361 @@ def weapon_tooltip(
         payload["jam_chance"] = _pair(jam["base_chance"], jam["chance"], 4)
         payload["jam_duration"] = _pair(jam["base_duration"], jam["duration"], 2)
 
-    chances = critical_chances(item)
+    chances = critical_chances(item, equipment_totals["critical_chance"])
     if chances:
         payload["critical_chance"] = chances
 
     return payload
+
+
+# --------------------------------------------------------------------------
+# Equipment effects (targeting computers, loaders, capacitors)
+# --------------------------------------------------------------------------
+
+# Advanced sensor packages label their beam-weapon filter as TAG rather than
+# BEAM, matching how the game presents it.
+ADVANCED_SENSOR_PACKAGE_ID = 9012
+MODIFIED_BALLISTIC_LOADER_ID = 9031
+
+
+def _effect_scope(module: Optional[Item], filt: Dict[str, Any]) -> str:
+    """Human label for which weapons a filter covers, e.g. `PROJECTILE`."""
+    tag = str(filt.get("tag") or "WEAPONS")
+    if int(finite_number((module or {}).get("id"))) == ADVANCED_SENSOR_PACKAGE_ID and (
+        tag.lower() == "beamweapons"
+    ):
+        return "TAG"
+    if tag.lower().endswith("weapons"):
+        tag = tag[: -len("weapons")]
+    return tag.upper()
+
+
+def weapon_filter_function_mode(filt: Dict[str, Any]) -> str:
+    """Some loaders change how a weapon fires rather than just its numbers."""
+    stats = filt.get("weapon_stats") or []
+
+    def any_stat(op: str, field: str, test) -> bool:
+        return any(
+            str(entry.get("operation") or "") == op
+            and entry.get(field) is not None
+            and test(finite_number(entry.get(field)))
+            for entry in stats
+        )
+
+    if any_stat("+", "numPerShot", lambda v: v > 0) and any_stat(
+        "*", "damage", lambda v: 0 < v < 1
+    ):
+        return "shotgun"
+    if any_stat("+", "numFiring", lambda v: v < 0) and any_stat(
+        "*", "damage", lambda v: v > 1
+    ):
+        return "single-projectile"
+    if (
+        any_stat("+", "volleydelay", lambda v: v > 0)
+        and any_stat("+", "numFiring", lambda v: v < 0)
+        and any_stat("+", "ammoPerShot", lambda v: v < 0)
+    ):
+        return "stream-fire"
+    return ""
+
+
+def _function_mode_label(mode: str) -> str:
+    if mode == "shotgun":
+        return "SHOTGUN"
+    if mode == "stream-fire":
+        return "STREAM FIRE"
+    return "SINGLE PROJECTILE"
+
+
+def matching_weapon_filters(
+    item: Optional[Item], modules: Optional[Sequence[Item]] = None
+) -> List[Tuple[Item, Dict[str, Any]]]:
+    """(module, filter) pairs from installed equipment that name this weapon."""
+    weapon_key = normalize_lookup_key((item or {}).get("name"))
+    pairs: List[Tuple[Item, Dict[str, Any]]] = []
+    if not weapon_key:
+        return pairs
+    for module in modules or ():
+        for filt in module.get("weapon_stat_filters") or ():
+            names = [normalize_lookup_key(n) for n in filt.get("compatible_weapons") or ()]
+            if weapon_key in names:
+                pairs.append((module, filt))
+    return pairs
+
+
+def collect_equipment_weapon_effects(
+    item: Optional[Item], modules: Optional[Sequence[Item]] = None
+) -> Dict[str, Any]:
+    """Range, velocity and critical-chance changes from installed equipment.
+
+    Targeting computers are the common case: they widen range, raise projectile
+    speed and add critical chance to the weapon families they cover.
+    """
+    totals = {
+        "range_bonus": 0.0,
+        "speed_bonus": 0.0,
+        "critical_chance": [0.0, 0.0, 0.0],
+    }
+    sources: List[Dict[str, Any]] = []
+
+    has_range = any(finite_number(r.get("start")) > 0 for r in (item or {}).get("ranges") or ())
+    has_velocity = (
+        finite_number((item or {}).get("stats", {}).get("speed")) > 0 and not is_hitscan(item)
+    )
+
+    for module in modules or ():
+        filters = [f for m, f in matching_weapon_filters(item, [module])]
+        if not filters:
+            continue
+
+        by_scope: Dict[str, Dict[str, float]] = {}
+        modes: List[str] = []
+        transforms: List[Dict[str, Any]] = []
+
+        def add(kind: str, scope: str, value: float) -> None:
+            if abs(value) < 0.0001:
+                return
+            by_scope.setdefault(scope, {}).setdefault(kind, 0.0)
+            by_scope[scope][kind] += value
+
+        for filt in filters:
+            scope = _effect_scope(module, filt)
+            mode = weapon_filter_function_mode(filt)
+            if mode and mode not in modes:
+                modes.append(mode)
+
+            for entry in filt.get("ranges") or ():
+                multiplier = finite_number(entry.get("multiplier"), 1)
+                if multiplier > 0:
+                    value = multiplier - 1
+                    totals["range_bonus"] += value
+                    if has_range:
+                        add("range", scope, value)
+
+            for entry in filt.get("weapon_stats") or ():
+                operation = str(entry.get("operation") or "")
+
+                # The ballistic loader restates a weapon's firing interval.
+                if (
+                    int(finite_number(module.get("id"))) == MODIFIED_BALLISTIC_LOADER_ID
+                    and mode
+                    and entry.get("volleydelay") is not None
+                    and operation in ("+", "*")
+                ):
+                    operand = finite_number(entry.get("volleydelay"))
+                    transforms.append(
+                        {
+                            "label": "SHOT INTERVAL",
+                            "value_text": (
+                                "{0}{1}".format("+" if operand > 0 else "", round(operand, 4))
+                                if operation == "+"
+                                else "x{0}".format(round(operand, 4))
+                            ),
+                        }
+                    )
+
+                if operation == "*" and finite_number(entry.get("speed")) > 0:
+                    value = finite_number(entry.get("speed"), 1) - 1
+                    totals["speed_bonus"] += value
+                    if has_velocity:
+                        add("velocity", scope, value)
+
+                if operation == "+" and entry.get("critChanceIncrease") is not None:
+                    parts = str(entry.get("critChanceIncrease")).split(",")
+                    for index, raw in enumerate(parts):
+                        if index < len(totals["critical_chance"]):
+                            totals["critical_chance"][index] += finite_number(
+                                _to_float(raw)
+                            )
+                    add("criticalChance", scope, finite_number(_to_float(parts[0])))
+
+        effects: List[Dict[str, Any]] = []
+        for mode in modes:
+            effects.append({"label": "FIRING MODE", "value_text": _function_mode_label(mode)})
+        effects.extend(transforms)
+        for scope, kinds in by_scope.items():
+            if "criticalChance" in kinds:
+                effects.append(
+                    {
+                        "label": "{0} CRITICAL CHANCE".format(scope),
+                        "value_text": _percent(kinds["criticalChance"] * 100, 2),
+                    }
+                )
+            if "range" in kinds:
+                effects.append(
+                    {
+                        "label": "{0} RANGE".format(scope),
+                        "value_text": _percent(kinds["range"] * 100, 1),
+                    }
+                )
+            if "velocity" in kinds:
+                effects.append(
+                    {
+                        "label": "{0} VELOCITY".format(scope),
+                        "value_text": _percent(kinds["velocity"] * 100, 1),
+                    }
+                )
+
+        if effects:
+            sources.append(
+                {
+                    "id": module.get("id"),
+                    "name": I.item_display_name(module),
+                    "effects": effects,
+                }
+            )
+
+    return {"totals": totals, "sources": sources}
+
+
+def _to_float(raw: Any) -> float:
+    try:
+        return float(str(raw).strip())
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def _percent(value: float, places: int) -> str:
+    text = "{0:.{1}f}".format(value, places).rstrip("0").rstrip(".")
+    if not text or text == "-0":
+        text = "0"
+    return "{0}{1}%".format("+" if value > 0 else "", text)
+
+
+# --------------------------------------------------------------------------
+# Equipment tooltips (non-weapons)
+# --------------------------------------------------------------------------
+
+
+def equipment_grant_rows(item: Optional[Item]) -> List[Dict[str, str]]:
+    """What a modifier device does to the weapons it covers.
+
+    Read straight off the device rather than off a weapon, so a targeting
+    computer's own card can state its effect without a weapon in hand.
+    """
+    rows: List[Dict[str, str]] = []
+    modes: List[str] = []
+
+    for filt in (item or {}).get("weapon_stat_filters") or ():
+        scope = _effect_scope(item, filt)
+        mode = weapon_filter_function_mode(filt)
+        if mode and mode not in modes:
+            modes.append(mode)
+
+        for entry in filt.get("ranges") or ():
+            multiplier = finite_number(entry.get("multiplier"), 1)
+            if abs(multiplier - 1) >= 0.0001:
+                rows.append(
+                    {
+                        "label": "{0} RANGE".format(scope),
+                        "value": _percent((multiplier - 1) * 100, 1),
+                    }
+                )
+
+        for entry in filt.get("weapon_stats") or ():
+            operation = str(entry.get("operation") or "")
+            if operation == "*" and finite_number(entry.get("speed")) > 0:
+                rows.append(
+                    {
+                        "label": "{0} VELOCITY".format(scope),
+                        "value": _percent((finite_number(entry.get("speed")) - 1) * 100, 1),
+                    }
+                )
+            if operation == "+" and entry.get("critChanceIncrease") is not None:
+                values = " / ".join(
+                    _percent(_to_float(part) * 100, 2)
+                    for part in str(entry.get("critChanceIncrease")).split(",")
+                )
+                rows.append(
+                    {"label": "{0} CRITICAL CHANCE".format(scope), "value": values}
+                )
+
+    mode_labels = {
+        "shotgun": ("HAG / GAUSS FIRING MODE", "SHOTGUN"),
+        "single-projectile": ("AC / UAC FIRING MODE", "SINGLE PROJECTILE"),
+        "stream-fire": ("LRM / ATM VOLLEY", "STREAM FIRE"),
+    }
+    leading = [
+        {"label": mode_labels[m][0], "value": mode_labels[m][1]}
+        for m in modes
+        if m in mode_labels
+    ]
+    return leading + rows
+
+
+def equipment_tooltip(
+    data,
+    item: Optional[Item],
+    quirks: Optional[Sequence[Quirk]] = None,
+    modules: Optional[Sequence[Item]] = None,
+) -> Optional[Dict[str, Any]]:
+    """Hover card for anything that is not a weapon."""
+    if not item or I.is_weapon(item):
+        return None
+
+    stats = item.get("stats") or {}
+    quirks = list(quirks or ())
+    rows: List[Dict[str, Any]] = [
+        {"label": "Tons", "value": "{0:g}".format(I.item_tons(item))},
+        {"label": "Slots", "value": str(I.item_slots(item))},
+    ]
+
+    def add(label: str, value: Any, suffix: str = "", places: int = 2) -> None:
+        numeric = finite_number(value, float("nan"))
+        if numeric != numeric:
+            return
+        rows.append({"label": label, "value": "{0:.{1}f}{2}".format(numeric, places, suffix)})
+
+    if I.is_heat_sink(item):
+        from omnibay.quirks import quirk_increase
+
+        dissipation_bonus = quirk_increase(quirks, "heatdissipation_multiplier")
+        capacity_bonus = quirk_increase(quirks, "maxheat_multiplier")
+        add("Heat capacity", abs(finite_number(stats.get("heatbase"))) * (1 + capacity_bonus))
+        add("Dissipation", finite_number(stats.get("cooling")) * (1 + dissipation_bonus), "/s")
+        add("Engine capacity", abs(finite_number(stats.get("engineHeatbase"))))
+        add(
+            "Engine dissipation",
+            finite_number(stats.get("engineCooling")) * (1 + dissipation_bonus),
+            "/s",
+        )
+    elif I.is_engine(item):
+        add("Rating", stats.get("rating"), places=0)
+        add("Internal heat sinks", I.engine_included_heat_sinks(item), places=0)
+        add("Additional heat sinks", I.engine_additional_heat_sink_capacity(item), places=0)
+        add("Side slots", I.engine_side_slots(item), places=0)
+    elif I.is_ammo(item):
+        from omnibay.weapons import effective_ammo_shots
+
+        add("Shots", effective_ammo_shots(item, quirks), places=0)
+        add("Internal damage", stats.get("internalDamage"))
+    elif I.is_jump_jet(item):
+        add("Duration", stats.get("duration"), " s")
+        add("Cooldown", stats.get("cooldown"), " s")
+        add("Vertical thrust", stats.get("boost_z"), places=1)
+        add("Forward thrust", stats.get("boost_fwd"), places=1)
+    else:
+        add("Health", stats.get("health"), places=0)
+        if stats.get("amountAllowed") is not None:
+            add("Max equipped", stats.get("amountAllowed"), places=0)
+        if stats.get("mechdetectionrange") is not None:
+            add("Detection range", stats.get("mechdetectionrange"), " m", places=0)
+        if stats.get("rangeboost") is not None:
+            add("Sensor range", finite_number(stats.get("rangeboost")) * 100, "%", places=1)
+
+    return {
+        "kind": "equipment",
+        "id": item.get("id"),
+        "name": I.item_display_name(item),
+        "category": item_category_for_tooltip(item),
+        "description": str(item.get("description") or "").strip(),
+        "rows": rows,
+        # For targeting computers and loaders: what they do to weapons.
+        "grants": equipment_grant_rows(item),
+    }
+
+
+def item_category_for_tooltip(item: Optional[Item]) -> str:
+    from omnibay.calculate import item_category
+
+    return item_category(item or {})

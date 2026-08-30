@@ -3,7 +3,7 @@
 // The index is a plain JSON file emitted at build time, so the mech browser
 // renders immediately without booting Pyodide. Everything else goes through
 // the engine.
-import type { WeaponTooltip } from '@/types.weapon'
+import type { ItemTooltip } from '@/types.weapon'
 import type {
   BuildResponse,
   BuildState,
@@ -59,7 +59,7 @@ export const engine = {
     callEngineSync<BuildResponse>((m) => m.calculate(reference, JSON.stringify(build))),
 
   weaponStats: (reference: string, itemId: number, build: BuildState | null) =>
-    callEngine<WeaponTooltip>((m) =>
+    callEngine<ItemTooltip>((m) =>
       m.weapon_stats(reference, itemId, build ? JSON.stringify(build) : ''),
     ),
 

@@ -8,10 +8,10 @@
  * Python engine, so nothing is recomputed here.
  */
 import { computed } from 'vue'
-import type { StatPair, WeaponTooltip } from '@/types.weapon'
+import type { ItemTooltip, StatPair } from '@/types.weapon'
 
 const props = defineProps<{
-  tooltip: WeaponTooltip
+  tooltip: ItemTooltip
   /** Viewport position of the pointer. */
   x: number
   y: number
@@ -30,6 +30,9 @@ const position = computed(() => {
   return { left: `${Math.max(MARGIN, left)}px`, top: `${top}px` }
 })
 
+/** Narrowed view for the weapon-only sections. */
+const weapon = computed(() => (props.tooltip.kind === 'weapon' ? props.tooltip : null))
+
 interface Row {
   label: string
   pair?: StatPair
@@ -45,7 +48,8 @@ function fmt(value: number, places = 2, suffix = '') {
 }
 
 const rows = computed<Row[]>(() => {
-  const t = props.tooltip
+  const t = weapon.value
+  if (!t) return []
   const out: Row[] = [
     { label: 'Tons', text: String(t.tons) },
     { label: 'Slots', text: String(t.slots) },
@@ -88,9 +92,10 @@ const rows = computed<Row[]>(() => {
 })
 
 const rateRows = computed(() => {
-  const r = props.tooltip.rates
+  if (!weapon.value) return []
+  const r = weapon.value.rates
   const out: Row[] = []
-  if (r.dps) out.push({ label: props.tooltip.continuous ? 'DPS (sustained)' : 'DPS', pair: r.dps })
+  if (r.dps) out.push({ label: weapon.value.continuous ? 'DPS (sustained)' : 'DPS', pair: r.dps })
   if (r.dph) out.push({ label: 'Damage per heat', pair: r.dph })
   if (r.hps) out.push({ label: 'Heat per second', pair: r.hps, inverted: true })
   return out
@@ -128,7 +133,26 @@ function effectValue(value: number): string {
         <span class="name">{{ tooltip.name }}</span>
       </header>
 
-      <dl>
+      <p v-if="tooltip.description" class="desc faint">{{ tooltip.description }}</p>
+
+      <dl v-if="tooltip.kind === 'equipment'">
+        <template v-for="row in tooltip.rows" :key="row.label">
+          <dt>{{ row.label }}</dt>
+          <dd class="mono">{{ row.value }}</dd>
+        </template>
+      </dl>
+
+      <template v-if="tooltip.kind === 'equipment' && tooltip.grants.length">
+        <h4>Grants to weapons</h4>
+        <dl>
+          <template v-for="row in tooltip.grants" :key="row.label">
+            <dt>{{ row.label }}</dt>
+            <dd class="mono better">{{ row.value }}</dd>
+          </template>
+        </dl>
+      </template>
+
+      <dl v-if="weapon">
         <template v-for="row in rows" :key="row.label">
           <dt>{{ row.label }}</dt>
           <dd class="mono" :class="toneOf(row)">
@@ -138,7 +162,7 @@ function effectValue(value: number): string {
         </template>
       </dl>
 
-      <template v-if="rateRows.length">
+      <template v-if="weapon && rateRows.length">
         <h4>Rates</h4>
         <dl>
           <template v-for="row in rateRows" :key="row.label">
@@ -151,10 +175,10 @@ function effectValue(value: number): string {
         </dl>
       </template>
 
-      <template v-if="tooltip.applied_effects.length">
+      <template v-if="weapon && weapon.applied_effects.length">
         <h4>Applied effects</h4>
         <ul class="effects">
-          <li v-for="effect in tooltip.applied_effects" :key="effect.name">
+          <li v-for="effect in weapon.applied_effects" :key="effect.name">
             <span class="effect-name">{{ effect.name }}</span>
             <span class="effect-what faint">{{ effect.effects.join(', ') }}</span>
             <span class="mono" :class="effect.harmful ? 'worse' : 'better'">
@@ -163,7 +187,24 @@ function effectValue(value: number): string {
           </li>
         </ul>
       </template>
-      <p v-else class="none faint">No quirks affect this weapon.</p>
+
+      <!-- Installed equipment that changes this weapon, listed per device. -->
+      <template v-for="source in weapon?.equipment_effects ?? []" :key="source.id">
+        <h4>{{ source.name }}</h4>
+        <ul class="effects">
+          <li v-for="effect in source.effects" :key="effect.label" class="equipment">
+            <span class="effect-name">{{ effect.label }}</span>
+            <span class="mono better">{{ effect.value_text }}</span>
+          </li>
+        </ul>
+      </template>
+
+      <p
+        v-if="weapon && !weapon.applied_effects.length && !weapon.equipment_effects.length"
+        class="none faint"
+      >
+        Nothing on this mech modifies this weapon.
+      </p>
     </aside>
   </Teleport>
 </template>
@@ -239,6 +280,10 @@ dd {
   gap: 6px;
   align-items: baseline;
 }
+/* Equipment rows have no "which stat" column, so they span it. */
+.effects li.equipment {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
 .effect-name {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -251,10 +296,22 @@ dd {
   margin: 8px 10px 0;
   font-size: 10px;
 }
+.desc {
+  margin: 7px 10px 0;
+  font-size: 9.5px;
+  line-height: 1.35;
+}
 
 .cat-weapon-energy { --tone: var(--c-energy); }
 .cat-weapon-ballistic { --tone: var(--c-ballistic); }
 .cat-weapon-missile { --tone: var(--c-missile); }
 .cat-weapon-ams { --tone: var(--c-ams); }
 .cat-weapon-other { --tone: var(--c-equipment); }
+.cat-ammo { --tone: var(--c-ammo); }
+.cat-heatsink { --tone: var(--c-heatsink); }
+.cat-engine { --tone: var(--c-engine); }
+.cat-jumpjet { --tone: var(--c-jumpjet); }
+.cat-masc { --tone: var(--c-masc); }
+.cat-equipment { --tone: var(--c-equipment); }
+.cat-internal { --tone: var(--c-internal); }
 </style>

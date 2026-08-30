@@ -16,7 +16,7 @@ from omnibay import build as B
 from omnibay import codec
 from omnibay import items as I
 from omnibay.calculate import calculate_build
-from omnibay.weapon_stats import weapon_tooltip
+from omnibay.weapon_stats import equipment_tooltip, weapon_tooltip
 from omnibay.constants import COMPONENT_ORDER, WEIGHT_CLASS_ORDER
 from omnibay.loader import GameData
 from omnibay.quirks import finite_number
@@ -290,7 +290,9 @@ def calculate(reference: str, build_json: str) -> str:
 
 @_guard
 def weapon_stats(reference: str, item_id: int, build_json: str = "") -> str:
-    """Per-weapon detail for the hover card, with this build's quirks applied.
+    """Detail for the hover card, with this build's quirks applied.
+
+    Handles any installable item, not only weapons.
 
     `build_json` may be empty, in which case the variant's stock loadout is
     used — enough for browsing the catalogue before committing to anything.
@@ -305,9 +307,13 @@ def weapon_stats(reference: str, item_id: int, build_json: str = "") -> str:
     quirks = B.effective_quirks(data, mech, build)
     modules = _installed_modules(data, mech, build)
 
-    tooltip = weapon_tooltip(data, item, quirks, modules)
+    # Weapons get the full statistics card; everything else gets a summary of
+    # its own stats plus, for modifier devices, what it grants to weapons.
+    tooltip = weapon_tooltip(data, item, quirks, modules) or equipment_tooltip(
+        data, item, quirks, modules
+    )
     if tooltip is None:
-        return _err("Not a weapon: {0}".format(item_id))
+        return _err("No detail available for item {0}".format(item_id))
     return _ok(tooltip)
 
 

@@ -91,7 +91,6 @@ function targetsFor(item: EquipmentItem): string[] {
 }
 
 function onRowHover(event: MouseEvent, item: EquipmentItem) {
-  if (item.item_type !== 'weapon') return
   emit('hover-weapon', item.id, event.clientX, event.clientY)
 }
 

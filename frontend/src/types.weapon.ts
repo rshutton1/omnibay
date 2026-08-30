@@ -17,8 +17,29 @@ export interface AppliedEffect {
   sources: readonly string[]
 }
 
-export interface WeaponTooltip {
+/** A piece of installed equipment that modifies this weapon. */
+export interface EquipmentEffectSource {
   id: number
+  name: string
+  effects: readonly { label: string; value_text: string }[]
+}
+
+/** Hover card for anything that is not a weapon. */
+export interface EquipmentTooltip {
+  kind: 'equipment'
+  id: number
+  name: string
+  category: string
+  description: string
+  rows: readonly { label: string; value: string }[]
+  /** What a modifier device grants to the weapons it covers. */
+  grants: readonly { label: string; value: string }[]
+}
+
+export interface WeaponTooltip {
+  kind: 'weapon'
+  id: number
+  description: string
   name: string
   category: string
   hardpoint_type: string
@@ -42,4 +63,8 @@ export interface WeaponTooltip {
   shot_interval: number | null
   continuous: boolean
   applied_effects: readonly AppliedEffect[]
+  equipment_effects: readonly EquipmentEffectSource[]
 }
+
+/** Either kind of hover card. */
+export type ItemTooltip = WeaponTooltip | EquipmentTooltip

@@ -150,11 +150,24 @@ const unallocatedArmor = computed(() =>
   Math.max(0, props.component.max_armor - props.component.armor - props.component.rear_armor),
 )
 
-/** Weapons get a detail card; everything else is self-explanatory. */
+// Structural filler has no item behind it, so there is nothing to describe.
+const UNDESCRIBABLE = new Set(['upgrade'])
+
+/** Any real item gets a detail card, not just weapons. */
 function onBlockHover(event: MouseEvent, block: Block) {
-  if (!block.category.startsWith('weapon-') || block.removableIndex === null) return
-  const item = props.component.items[block.removableIndex]
+  if (UNDESCRIBABLE.has(block.category)) return
+  const item =
+    block.removableIndex !== null
+      ? props.component.items[block.removableIndex]
+      : findFixedItem(block)
   if (item) emit('hover-weapon', item.id, event.clientX, event.clientY)
+}
+
+/** Fixed and internal blocks are not in `items`, so resolve them by label. */
+function findFixedItem(block: Block): DescribedItem | undefined {
+  return [...props.component.fixed_items, ...props.component.internals].find(
+    (candidate) => candidate.display_name === block.label,
+  )
 }
 
 /** Installed equipment can be lifted out and dropped into another component. */

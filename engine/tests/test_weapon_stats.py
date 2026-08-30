@@ -133,3 +133,120 @@ def test_applied_effects_report_the_quirks_own_sign(data, hunchback):
     assert cooldown["value"] > 0, "internally a reduction magnitude"
     assert cooldown["quirk_value"] < 0, "displayed with the quirk's own sign"
     assert cooldown["quirk_value"] == pytest.approx(-0.25)
+
+
+TARGETING_COMPUTER_MK_I = 9013
+
+
+def test_targeting_computer_adds_critical_chance_and_velocity(data):
+    """Equipment modifies weapons too, not just quirks.
+
+    A Targeting Computer Mk I gives projectile weapons +1.14% critical chance
+    and +10% velocity — the reference client shows exactly these figures.
+    """
+    computer = data.item(TARGETING_COMPUTER_MK_I)
+    tooltip = weapon_tooltip(data, data.item(AC20), [], [computer])
+
+    (source,) = tooltip["equipment_effects"]
+    assert source["name"] == "TARGETING COMP. MK I"
+    labels = {effect["label"]: effect["value_text"] for effect in source["effects"]}
+    assert labels["PROJECTILE CRITICAL CHANCE"] == "+1.14%"
+    assert labels["PROJECTILE VELOCITY"] == "+10%"
+
+
+def test_targeting_computer_raises_the_reported_velocity(data):
+    computer = data.item(TARGETING_COMPUTER_MK_I)
+    without = weapon_tooltip(data, data.item(AC20), [], [])
+    with_computer = weapon_tooltip(data, data.item(AC20), [], [computer])
+
+    assert with_computer["velocity"]["final"] == pytest.approx(
+        without["velocity"]["final"] * 1.1, rel=1e-3
+    )
+
+
+def test_equipment_and_quirk_velocity_bonuses_add(data, hunchback):
+    """The HBK-4G's +25%/+20% velocity quirks stack with the computer's +10%."""
+    _mech, _build, quirks = hunchback
+    computer = data.item(TARGETING_COMPUTER_MK_I)
+    tooltip = weapon_tooltip(data, data.item(AC20), quirks, [computer])
+    base = tooltip["velocity"]["base"]
+    assert tooltip["velocity"]["final"] == pytest.approx(base * (1 + 0.25 + 0.20 + 0.10), rel=1e-3)
+
+
+def test_critical_chance_includes_the_equipment_bonus(data):
+    computer = data.item(TARGETING_COMPUTER_MK_I)
+    chances = weapon_tooltip(data, data.item(AC20), [], [computer])["critical_chance"]
+    assert chances[0] == pytest.approx(0.0114)
+
+
+def test_no_equipment_means_no_equipment_section(data):
+    assert weapon_tooltip(data, data.item(AC20), [], [])["equipment_effects"] == []
+
+
+# --- equipment cards -------------------------------------------------------
+
+STD_HEAT_SINK = 3000
+CLAN_ACTIVE_PROBE = 9002
+
+
+def test_equipment_gets_a_card_of_its_own(data):
+    """Hovering a non-weapon must describe it, not fall back to nothing."""
+    from omnibay.weapon_stats import equipment_tooltip
+
+    tooltip = equipment_tooltip(data, data.item(TARGETING_COMPUTER_MK_I), [])
+    assert tooltip["kind"] == "equipment"
+    assert tooltip["name"] == "TARGETING COMP. MK I"
+    assert tooltip["description"]
+    labels = {row["label"] for row in tooltip["rows"]}
+    assert {"Tons", "Slots", "Health", "Max equipped"} <= labels
+
+
+def test_a_targeting_computer_states_what_it_grants(data):
+    """Its own card must show its effect without needing a weapon selected."""
+    from omnibay.weapon_stats import equipment_tooltip
+
+    grants = equipment_tooltip(data, data.item(TARGETING_COMPUTER_MK_I), [])["grants"]
+    labels = {row["label"]: row["value"] for row in grants}
+    assert labels["PROJECTILE VELOCITY"] == "+10%"
+    assert labels["PROJECTILE CRITICAL CHANCE"].startswith("+1.14%")
+
+
+def test_plain_equipment_grants_nothing(data):
+    from omnibay.weapon_stats import equipment_tooltip
+
+    assert equipment_tooltip(data, data.item(STD_HEAT_SINK), [])["grants"] == []
+
+
+def test_heat_sink_card_reports_dissipation(data):
+    from omnibay.weapon_stats import equipment_tooltip
+
+    labels = {
+        row["label"] for row in equipment_tooltip(data, data.item(STD_HEAT_SINK), [])["rows"]
+    }
+    assert "Dissipation" in labels
+    assert "Heat capacity" in labels
+
+
+def test_ammo_card_reports_shots(data):
+    from omnibay.weapon_stats import equipment_tooltip
+
+    rows = {r["label"]: r["value"] for r in equipment_tooltip(data, data.item(AC20_AMMO), [])["rows"]}
+    assert rows["Shots"] == "10"
+
+
+def test_weapons_do_not_produce_equipment_cards(data):
+    from omnibay.weapon_stats import equipment_tooltip
+
+    assert equipment_tooltip(data, data.item(AC20), []) is None
+
+
+def test_every_installable_item_yields_some_card(data):
+    """Whatever the pointer lands on, one of the two builders must handle it."""
+    from omnibay.weapon_stats import equipment_tooltip
+
+    missing = []
+    for item in data.items.values():
+        card = weapon_tooltip(data, item, []) or equipment_tooltip(data, item, [])
+        if card is None or not card.get("name"):
+            missing.append(item.get("name"))
+    assert not missing, missing[:5]
