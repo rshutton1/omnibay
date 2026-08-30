@@ -132,6 +132,8 @@ export interface CalcResult {
     equipment: number
     structure: number
     armor: number
+    /** Tons above the chassis limit; 0 when legal. */
+    over_by: number
     overweight: boolean
   }
   slots: {

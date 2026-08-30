@@ -80,8 +80,14 @@ const armorPct = computed(() =>
       </div>
 
       <div class="readout mono" :class="{ bad: store.result.tonnage.overweight }">
-        <strong>{{ store.result.tonnage.free.toFixed(2) }}</strong>
-        <span class="faint">tons free</span>
+        <strong>
+          {{
+            store.result.tonnage.overweight
+              ? `+${store.result.tonnage.over_by.toFixed(2)}`
+              : store.result.tonnage.free.toFixed(2)
+          }}
+        </strong>
+        <span class="faint">{{ store.result.tonnage.overweight ? 'tons OVER' : 'tons free' }}</span>
       </div>
       <div class="readout mono" :class="{ bad: store.result.slots.free < 0 }">
         <strong>{{ store.result.slots.free }}</strong>
@@ -91,9 +97,11 @@ const armorPct = computed(() =>
         <strong>{{ armorPct }}%</strong>
         <span class="faint">armor</span>
       </div>
-      <div class="readout mono" :class="store.result.valid ? 'good' : 'bad'">
-        <strong>{{ store.result.valid ? 'OK' : store.result.warnings.length }}</strong>
-        <span class="faint">{{ store.result.valid ? 'status' : 'issues' }}</span>
+      <div class="readout mono status" :class="store.result.valid ? 'good' : 'bad'">
+        <strong>{{ store.result.valid ? 'OK' : 'INVALID' }}</strong>
+        <span class="faint">
+          {{ store.result.valid ? 'status' : `${store.result.warnings.length} issue${store.result.warnings.length === 1 ? '' : 's'}` }}
+        </span>
       </div>
 
       <div class="actions">
@@ -203,6 +211,22 @@ const armorPct = computed(() =>
 }
 .readout.bad strong {
   color: var(--danger);
+}
+.readout.status {
+  min-width: 76px;
+}
+/* An invalid build should register before you read anything. */
+.readout.status.bad strong {
+  animation: flag 1.1s ease-in-out 3;
+}
+@keyframes flag {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .readout.status.bad strong {
+    animation: none;
+  }
 }
 .readout.good strong {
   color: var(--ok);

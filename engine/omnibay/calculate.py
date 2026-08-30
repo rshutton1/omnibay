@@ -11,6 +11,7 @@ from omnibay import build as B
 from omnibay import items as I
 from omnibay.constants import (
     COMPONENT_ABBREVIATIONS,
+    TONNAGE_EPSILON,
     COMPONENT_LABELS,
     COMPONENT_QUIRK_CODES,
     COMPONENT_ORDER,
@@ -279,8 +280,17 @@ def calculate_build(
     armor_tons = B.armor_tonnage(armor_points, armor_upgrade)
     used_tons = structure_tons + item_tonnage + armor_tons
     free_tons = max_tons - used_tons
-    if max_tons and used_tons > max_tons + 0.1:
-        warnings.append("Tonnage {0:.2f}/{1:.2f}".format(used_tons, max_tons))
+    over_by = used_tons - max_tons
+    is_overweight = bool(max_tons) and over_by > TONNAGE_EPSILON
+    if is_overweight:
+        # Show enough precision to explain a small overage that would otherwise
+        # round to a tidy-looking "50.00 / 50.00".
+        places = 2 if over_by >= 0.005 else 4
+        warnings.append(
+            "Overweight by {0:.{2}f}t ({1:.{2}f} / {3:.2f})".format(
+                over_by, used_tons, places, max_tons
+            )
+        )
 
     # -- heat sinks and jump jets -------------------------------------------
     engine_included = I.engine_included_heat_sinks(engine)
@@ -342,11 +352,12 @@ def calculate_build(
         "tonnage": {
             "max": _round(max_tons, 2),
             "used": _round(used_tons, 2),
-            "free": _round(free_tons, 2),
+            "free": _round(free_tons, 4),
             "equipment": _round(item_tonnage, 2),
             "structure": _round(structure_tons, 2),
             "armor": _round(armor_tons, 2),
-            "overweight": bool(max_tons and used_tons > max_tons + 0.1),
+            "over_by": _round(max(0.0, over_by), 4),
+            "overweight": is_overweight,
         },
         "slots": {
             "total": total_slot_capacity,

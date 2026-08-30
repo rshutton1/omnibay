@@ -123,3 +123,10 @@ COMPONENT_ABBREVIATIONS: Dict[str, str] = {
     "left_leg": "LL",
     "right_leg": "RL",
 }
+
+
+# Tonnage is compared with a float-noise epsilon, not a fudge factor: armor
+# tonnage is points divided by an armor-per-ton rate, so a build's total is a
+# sum of repeating decimals. Anything above the limit at all is invalid in
+# game, and observed drift is ~1e-13, so this only absorbs representation error.
+TONNAGE_EPSILON = 1e-6

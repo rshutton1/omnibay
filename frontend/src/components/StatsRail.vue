@@ -69,9 +69,14 @@ const firepower = computed(() => [
           </span>
         </div>
         <div class="track"><div class="fill" :style="{ width: `${tonnagePercent}%` }" /></div>
-        <div class="split mono faint">
-          equipment {{ result.tonnage.equipment.toFixed(1) }} · structure
-          {{ result.tonnage.structure.toFixed(1) }} · armor {{ result.tonnage.armor.toFixed(1) }}
+        <div class="split mono" :class="result.tonnage.overweight ? 'danger-text' : 'faint'">
+          <template v-if="result.tonnage.overweight">
+            over by {{ result.tonnage.over_by.toFixed(2) }}t — build is invalid
+          </template>
+          <template v-else>
+            equipment {{ result.tonnage.equipment.toFixed(1) }} · structure
+            {{ result.tonnage.structure.toFixed(1) }} · armor {{ result.tonnage.armor.toFixed(1) }}
+          </template>
         </div>
       </div>
 
