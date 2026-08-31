@@ -1,9 +1,5 @@
 <script setup lang="ts">
-import { onErrorCaptured, onMounted, ref } from 'vue'
-import { loadMechIndex } from '@/engine/client'
-
-const counts = ref<Record<string, number> | null>(null)
-const source = ref('')
+import { onErrorCaptured, ref } from 'vue'
 
 // An error boundary. Without one, a throw during render tears down the tree and
 // leaves a blank page with no indication of what happened.
@@ -17,16 +13,6 @@ onErrorCaptured((error) => {
 function reload() {
   window.location.reload()
 }
-
-onMounted(async () => {
-  try {
-    const { meta } = await loadMechIndex()
-    counts.value = meta.counts
-    source.value = meta.generated_from
-  } catch {
-    // The header stat is decoration; a failure here must not block the app.
-  }
-})
 </script>
 
 <template>
@@ -36,9 +22,7 @@ onMounted(async () => {
       <nav>
         <RouterLink to="/mechs">Mechs</RouterLink>
       </nav>
-      <span v-if="counts" class="muted" style="margin-left: auto; font-size: 12px">
-        {{ counts.mechs }} variants · {{ counts.items }} items · {{ source }}
-      </span>
+      <!-- Right side of the bar is deliberately empty for now. -->
     </header>
     <main>
       <section v-if="fatal" class="fatal panel">
