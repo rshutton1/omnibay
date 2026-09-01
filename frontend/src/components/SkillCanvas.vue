@@ -2,10 +2,14 @@
 /**
  * One skill category, drawn the way the game lays it out.
  *
- * The extracted data carries each node's real grid coordinates, so positions
- * are read from them rather than invented: odd columns sit half a row lower,
- * which is what produces the tree's characteristic zigzag as a chain descends.
- * Connectors are drawn behind the nodes from each node to its predecessor.
+ * A branch is a chain, and it descends one full step per node while alternating
+ * between the two columns the branch occupies — node 1 top-left, node 2 below
+ * and to the right, node 3 below-left again. That alternation is what gives the
+ * tree its zigzag. Column positions come from the extracted game data (with the
+ * gaps between branches compacted away); the vertical order comes from the
+ * chain, since two nodes sharing a data row are still consecutive steps.
+ *
+ * Connectors are drawn behind the nodes, from each node to its predecessor.
  */
 import { computed } from 'vue'
 import type { SkillBranch, SkillCategory, SkillNode } from '@/types.skills'
@@ -34,28 +38,73 @@ interface Placed {
   cy: number
 }
 
-const columnOrigin = computed(() =>
-  Math.min(...props.category.branches.flatMap((b) => b.nodes.map((n) => n.column))),
-)
+/** Vertical gap, in node steps, between branches sharing a column. */
+const BRANCH_GAP = 1
 
-/** Grid coordinates to pixels, with the half-row offset on odd columns. */
-function place(node: SkillNode): { x: number; y: number } {
-  const x = (node.column - columnOrigin.value) * COLUMN_WIDTH
-  const y = (node.row + (node.column % 2 === 1 ? 0.5 : 0)) * ROW_HEIGHT + LABEL_HEIGHT
-  return { x, y }
-}
+/**
+ * Data columns are sparse (0,1 then 3,4 then 6,7 ...) because the game leaves a
+ * blank column between branches. Compacting them keeps the canvas narrow
+ * without changing the left-to-right order.
+ */
+const columnIndex = computed(() => {
+  const used = [
+    ...new Set(props.category.branches.flatMap((b) => b.nodes.map((n) => n.column))),
+  ].sort((a, b) => a - b)
+  return new Map(used.map((column, index) => [column, index]))
+})
+
+const layout = computed(() => {
+  const index = columnIndex.value
+  // Branches that share a leftmost column stack vertically, in row order.
+  const byColumn = new Map<number, SkillBranch[]>()
+  for (const branch of props.category.branches) {
+    const left = Math.min(...branch.nodes.map((n) => index.get(n.column) ?? 0))
+    const list = byColumn.get(left) ?? []
+    list.push(branch)
+    byColumn.set(left, list)
+  }
+
+  const positions = new Map<string, { x: number; y: number; step: number }>()
+  const branchTops = new Map<string, { x: number; step: number }>()
+
+  for (const [left, branches] of byColumn) {
+    branches.sort(
+      (a, b) =>
+        Math.min(...a.nodes.map((n) => n.row)) - Math.min(...b.nodes.map((n) => n.row)),
+    )
+    let step = 0
+    for (const branch of branches) {
+      // The columns this branch occupies, left to right.
+      const columns = [...new Set(branch.nodes.map((n) => index.get(n.column) ?? left))].sort(
+        (a, b) => a - b,
+      )
+      branchTops.set(branch.key, { x: columns[0], step })
+      for (const node of branch.nodes) {
+        // Node 1 sits in the leftmost column, then the chain alternates.
+        const column = columns[(node.order - 1) % columns.length]
+        positions.set(node.name, {
+          x: column * COLUMN_WIDTH,
+          y: (step + node.order - 1) * ROW_HEIGHT + LABEL_HEIGHT,
+          step: step + node.order - 1,
+        })
+      }
+      step += branch.nodes.length + BRANCH_GAP
+    }
+  }
+  return { positions, branchTops }
+})
 
 const placed = computed<Placed[]>(() =>
   props.category.branches.flatMap((branch) =>
     branch.nodes.map((node) => {
-      const { x, y } = place(node)
+      const at = layout.value.positions.get(node.name) ?? { x: 0, y: 0 }
       return {
         node,
         branch,
-        x,
-        y,
-        cx: x + NODE_WIDTH / 2,
-        cy: y + NODE_HEIGHT / 2,
+        x: at.x,
+        y: at.y,
+        cx: at.x + NODE_WIDTH / 2,
+        cy: at.y + NODE_HEIGHT / 2,
       }
     }),
   ),
@@ -87,21 +136,15 @@ const connectors = computed(() =>
 const labels = computed(() =>
   props.category.branches
     .map((branch) => {
-      const first = branch.nodes[0]
-      if (!first) return null
-      const top = branch.nodes.reduce(
-        (best, node) => (place(node).y < place(best).y ? node : best),
-        first,
-      )
-      const { x, y } = place(top)
-      const taken = branch.nodes.filter((n) => n.selected).length
+      const top = layout.value.branchTops.get(branch.key)
+      if (!top) return null
       return {
         key: branch.key,
         label: branch.label,
-        taken,
+        taken: branch.nodes.filter((n) => n.selected).length,
         total: branch.nodes.length,
-        x: x - 6,
-        y: y - LABEL_HEIGHT,
+        x: top.x * COLUMN_WIDTH - 6,
+        y: top.step * ROW_HEIGHT,
       }
     })
     .filter((entry): entry is NonNullable<typeof entry> => entry !== null),
