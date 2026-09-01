@@ -19,14 +19,14 @@ from omnibay import bridge  # noqa: E402
 from omnibay.loader import GameData  # noqa: E402
 
 # Only the files the engine actually reads at runtime. Localization (1.6 MB)
-# and the skill tree are loaded by the loader but unused by the current UI, so
-# they stay out of the bundle until a feature needs them.
+# stays out until the UI needs it; the loader treats it as optional.
 RUNTIME_DATA_FILES = (
     "index.json",
     "mechs.json",
     "equipment.json",
     "loadouts.json",
     "omnipods.json",
+    "skills.json",
 )
 
 def engine_modules(engine_source: str) -> list:
@@ -83,11 +83,11 @@ def main() -> int:
     for filename in modules:
         shutil.copy2(os.path.join(engine_source, filename), os.path.join(engine_out, filename))
 
-    # The client stages the engine from this manifest, so the two can never
-    # disagree about which modules exist.
+    # The client stages both the engine and the game data from this manifest,
+    # so neither list can drift out of step with what was actually bundled.
     manifest_path = os.path.join(args.out, "engine", "manifest.json")
     with open(manifest_path, "w", encoding="utf-8") as handle:
-        json.dump({"modules": modules}, handle)
+        json.dump({"modules": modules, "data": list(RUNTIME_DATA_FILES)}, handle)
     print("engine    {0} modules".format(len(modules)))
 
     # Precomputed so the mech browser needs no Python at all.

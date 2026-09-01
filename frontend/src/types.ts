@@ -67,6 +67,8 @@ export interface BuildState {
   }
   engine_heat_sinks: ItemEntry[]
   actuator_state: number
+  /** Selected skill node names. */
+  skills: string[]
 }
 
 export interface DescribedItem {
@@ -104,6 +106,11 @@ export interface ComponentResult {
   armor: number
   rear_armor: number
   max_armor: number
+  structure: number
+  /** Armor and structure after durability quirks and skills. */
+  effective_armor: number
+  effective_rear_armor: number
+  effective_structure: number
   omnipod: number | null
   items: DescribedItem[]
   fixed_items: DescribedItem[]

@@ -16,23 +16,15 @@ const BASE = import.meta.env.BASE_URL
  * rather than being repeated here. A hardcoded copy silently omits new modules
  * and fails at import time in the browser.
  */
-async function engineModules(): Promise<string[]> {
+async function manifest(): Promise<{ modules: string[]; data: string[] }> {
   const response = await fetchOrThrow(`${BASE}engine/manifest.json`)
-  const manifest = (await response.json()) as { modules?: string[] }
-  if (!manifest.modules?.length) {
-    throw new EngineError('Engine manifest is empty — run `npm run bundle`.')
+  const parsed = (await response.json()) as { modules?: string[]; data?: string[] }
+  if (!parsed.modules?.length || !parsed.data?.length) {
+    throw new EngineError('Engine manifest is incomplete — run `npm run bundle`.')
   }
-  return manifest.modules
+  return { modules: parsed.modules, data: parsed.data }
 }
 
-/** Game data the engine reads at startup. */
-const DATA_FILES = [
-  'index.json',
-  'mechs.json',
-  'equipment.json',
-  'loadouts.json',
-  'omnipods.json',
-]
 
 export type BootPhase = 'idle' | 'runtime' | 'data' | 'indexing' | 'ready' | 'failed'
 
@@ -53,6 +45,8 @@ interface BridgeModule {
   list_equipment(): string
   stock_build(reference: string): string
   weapon_stats(reference: string, itemId: number, buildJson: string): string
+  get_skill_tree(reference: string, buildJson: string): string
+  set_skills(reference: string, buildJson: string, selectionJson: string): string
   calculate(reference: string, buildJson: string): string
   export_code(reference: string, buildJson: string): string
   import_code(code: string): string
@@ -138,20 +132,24 @@ async function boot(): Promise<BridgeModule> {
   // The game data and engine source do not depend on Pyodide, so they download
   // concurrently with the much larger WebAssembly runtime instead of queueing
   // behind it.
-  const dataPromise = Promise.all(
-    DATA_FILES.map(async (file) => ({
-      file,
-      bytes: new Uint8Array(await (await fetchOrThrow(`${BASE}data/${file}`)).arrayBuffer()),
-    })),
-  )
-  const sourcePromise = engineModules().then((modules) =>
+  const manifestPromise = manifest()
+  const dataPromise = manifestPromise.then((m) =>
     Promise.all(
-      modules.map(async (file) => ({
+      m.data.map(async (file) => ({
+        file,
+        bytes: new Uint8Array(await (await fetchOrThrow(`${BASE}data/${file}`)).arrayBuffer()),
+      })),
+    ),
+  )
+  const sourcePromise = manifestPromise.then((m) =>
+    Promise.all(
+      m.modules.map(async (file) => ({
         file,
         text: await (await fetchOrThrow(`${BASE}engine/omnibay/${file}`)).text(),
       })),
     ),
   )
+  manifestPromise.catch(() => undefined)
   // Neither is awaited yet; swallow rejections here so a failure surfaces at
   // the await below rather than as an unhandled promise rejection.
   dataPromise.catch(() => undefined)

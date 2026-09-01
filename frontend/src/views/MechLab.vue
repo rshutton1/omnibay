@@ -179,6 +179,9 @@ const armorPct = computed(() =>
 
       <div class="actions">
         <RouterLink :to="`/info/${store.mech.name}`">Info</RouterLink>
+        <RouterLink :to="`/skills/${store.mech.name}`" class="skills-link">
+          Skills<span v-if="store.skillPointsSpent" class="mono"> {{ store.skillPointsSpent }}</span>
+        </RouterLink>
         <button @click="store.maximiseArmor()">Max armor</button>
         <button @click="store.stripArmor()">Strip</button>
         <button @click="store.resetToStock()">Stock</button>
@@ -321,6 +324,9 @@ const armorPct = computed(() =>
   gap: 5px;
   align-items: center;
   font-size: 12px;
+}
+.skills-link .mono {
+  color: var(--accent);
 }
 
 .warnings {

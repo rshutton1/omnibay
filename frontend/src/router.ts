@@ -18,6 +18,12 @@ export const router = createRouter({
       props: true,
     },
     {
+      path: '/skills/:reference',
+      name: 'skills',
+      component: () => import('@/views/SkillTree.vue'),
+      props: true,
+    },
+    {
       path: '/info/:reference',
       name: 'info',
       component: () => import('@/views/MechInfo.vue'),

@@ -4,6 +4,7 @@
 // renders immediately without booting Pyodide. Everything else goes through
 // the engine.
 import type { ItemTooltip } from '@/types.weapon'
+import type { SkillTree } from '@/types.skills'
 import type {
   BuildResponse,
   BuildState,
@@ -61,6 +62,15 @@ export const engine = {
   weaponStats: (reference: string, itemId: number, build: BuildState | null) =>
     callEngine<ItemTooltip>((m) =>
       m.weapon_stats(reference, itemId, build ? JSON.stringify(build) : ''),
+    ),
+
+  skillTree: (reference: string, build: BuildState | null) =>
+    callEngine<SkillTree>((m) => m.get_skill_tree(reference, build ? JSON.stringify(build) : '')),
+
+  /** The engine fills in chains and enforces the point cap, then recalculates. */
+  setSkills: (reference: string, build: BuildState, selection: string[]) =>
+    callEngine<BuildResponse & { skills: { selected: string[]; dropped: string[]; spent: number; max_points: number } }>(
+      (m) => m.set_skills(reference, JSON.stringify(build), JSON.stringify(selection)),
     ),
 
   exportCode: (reference: string, build: BuildState) =>

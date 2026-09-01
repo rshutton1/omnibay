@@ -21,7 +21,14 @@ from omnibay.constants import (
     MOVABLE_UPGRADE_SLOT_IDS,
 )
 from omnibay import weapons as W
-from omnibay.quirks import finite_number, quirk_family, quirk_multiplier, quirk_values
+from omnibay.quirks import (
+    durability_skill_final_value,
+    finite_number,
+    quirk_add,
+    quirk_family,
+    quirk_multiplier,
+    quirk_values,
+)
 
 
 def _round(value: float, places: int = 3) -> float:
@@ -103,6 +110,7 @@ def calculate_build(
             "armor": max(0, int(finite_number(build_comp.get("armor")))),
             "rear_armor": max(0, int(finite_number(build_comp.get("rear_armor")))),
             "max_armor": B.base_max_armor(mech, name),
+            "structure": int(finite_number(comp_def.get("hp"))),
             "omnipod": build_comp.get("omnipod"),
             "items": [],
             "fixed_items": [],
@@ -224,6 +232,8 @@ def calculate_build(
         usage["fixed_armor_slots"] = int(finite_number(fixed_armor_by_component.get(name)))
         components[name] = usage
 
+    _apply_durability(components, quirk_lookup)
+
     # -- engine heat sinks --------------------------------------------------
     for entry in build.get("engine_heat_sinks") or ():
         item = data.item(entry.get("item_id") if isinstance(entry, dict) else entry)
@@ -298,11 +308,14 @@ def calculate_build(
     is_double = "double" in str((heat_sink_upgrade or {}).get("display_name") or "").lower()
     total_heat_sinks = engine_included + installed_heat_sinks
     dissipation_per_sink = 0.2 if is_double else 0.1
+    # The game data names these `heatdissipation_multiplier` and
+    # `maxheat_multiplier`; `heatloss`/`heatcapacity` appear nowhere in it, so
+    # the earlier names silently multiplied by 1.
     heat_dissipation = total_heat_sinks * dissipation_per_sink * quirk_multiplier(
-        quirk_lookup, ["heatloss_multiplier", "all_heatloss_multiplier"]
+        quirk_lookup, ["heatdissipation_multiplier"]
     )
     heat_capacity = (30.0 + total_heat_sinks * (2.0 if is_double else 1.0)) * quirk_multiplier(
-        quirk_lookup, ["heatcapacity_multiplier", "all_heatcapacity_multiplier"]
+        quirk_lookup, ["maxheat_multiplier"]
     )
 
     jump_jets = sum(
@@ -394,6 +407,59 @@ def calculate_build(
         "warnings": warnings,
         "valid": not warnings,
     }
+
+
+# Component codes as they appear in durability quirk names, plus the rear
+# variants used by the torsos.
+_DURABILITY_CODES = {
+    "head": ("hd", None),
+    "left_arm": ("la", None),
+    "left_torso": ("lt", "ltr"),
+    "centre_torso": ("ct", "ctr"),
+    "right_torso": ("rt", "rtr"),
+    "right_arm": ("ra", None),
+    "left_leg": ("ll", None),
+    "right_leg": ("rl", None),
+}
+
+
+def _apply_durability(
+    components: Dict[str, Dict[str, Any]], quirk_lookup: Dict[str, float]
+) -> None:
+    """Effective armor and structure after quirks and durability skills.
+
+    Additive quirks raise the value directly; the skill multipliers scale the
+    total and floor it. Neither changes how many points may be allocated - a
+    component's capacity is fixed by its internals.
+    """
+    armor_skill = finite_number(quirk_lookup.get("increasedarmor_multiplier"))
+    structure_skill = finite_number(quirk_lookup.get("increasedstructure_multiplier"))
+
+    for name, usage in components.items():
+        code, rear_code = _DURABILITY_CODES.get(name, (None, None))
+        if not code:
+            continue
+
+        front_bonus = quirk_add(quirk_lookup, "armorresist", code)
+        rear_bonus = (
+            finite_number(quirk_lookup.get("armorresist_all_additive"))
+            + finite_number(quirk_lookup.get("armorresist_{0}_additive".format(rear_code)))
+            if rear_code
+            else 0.0
+        )
+        structure_bonus = quirk_add(quirk_lookup, "internalresist", code)
+
+        front = max(0.0, usage["armor"] + front_bonus)
+        rear = max(0.0, usage["rear_armor"] + rear_bonus)
+        total_before = front + rear
+        total_after = durability_skill_final_value(total_before, armor_skill)
+
+        structure_before = usage["structure"] + structure_bonus
+        structure_after = durability_skill_final_value(structure_before, structure_skill)
+
+        usage["effective_armor"] = int(front + (total_after - total_before)) if rear_code else int(total_after)
+        usage["effective_rear_armor"] = int(rear) if rear_code else 0
+        usage["effective_structure"] = int(structure_after)
 
 
 def _component_quirks(

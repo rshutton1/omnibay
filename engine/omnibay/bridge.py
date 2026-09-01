@@ -16,6 +16,7 @@ from omnibay import build as B
 from omnibay import codec
 from omnibay import items as I
 from omnibay.calculate import calculate_build
+from omnibay.skills import MAX_SKILL_POINTS, normalize_selection, skill_tree
 from omnibay.weapon_stats import equipment_tooltip, weapon_tooltip
 from omnibay.constants import COMPONENT_ORDER, WEIGHT_CLASS_ORDER
 from omnibay.loader import GameData
@@ -332,6 +333,48 @@ def _installed_modules(data: GameData, mech: Dict[str, Any], build: Dict[str, An
             if item and item.get("item_type") == "module":
                 modules.append(item)
     return modules
+
+
+@_guard
+def get_skill_tree(reference: str, build_json: str = "") -> str:
+    """The whole skill tree with values resolved for this mech.
+
+    Node availability reflects the current selection, so the client can render
+    what is reachable without duplicating the chain rule.
+    """
+    data = _require_data()
+    mech = _require_mech(reference)
+    build = json.loads(build_json) if build_json else B.build_from_stock_loadout(data, mech)
+    return _ok(skill_tree(data, mech, build, build.get("skills") or []))
+
+
+@_guard
+def set_skills(reference: str, build_json: str, selection_json: str) -> str:
+    """Apply a skill selection, filling in chains and enforcing the point cap.
+
+    Returns the normalised selection alongside the recalculated build, so a
+    click on a deep node pulls its prerequisites in without the client having
+    to work them out.
+    """
+    data = _require_data()
+    mech = _require_mech(reference)
+    build = json.loads(build_json)
+    requested = json.loads(selection_json) or []
+
+    selection, dropped = normalize_selection(data, mech, build, requested)
+    build["skills"] = selection
+    return _ok(
+        {
+            "build": build,
+            "result": calculate_build(data, mech, build),
+            "skills": {
+                "selected": selection,
+                "dropped": dropped,
+                "spent": len(selection),
+                "max_points": MAX_SKILL_POINTS,
+            },
+        }
+    )
 
 
 @_guard

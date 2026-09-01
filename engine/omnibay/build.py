@@ -58,6 +58,8 @@ def empty_build() -> Dict[str, Any]:
         },
         "engine_heat_sinks": [],
         "actuator_state": 0,
+        # Names of selected skill nodes; see omnibay.skills.
+        "skills": [],
     }
 
 
@@ -261,6 +263,23 @@ def effective_quirks(
                         setName=set_name,
                         pieceCount=piece_count,
                     )
+
+    # Pilot skills produce ordinary quirks, so they merge here rather than
+    # being applied separately downstream. Imported inside the function because
+    # the skills module needs this one.
+    from omnibay.skills import selected_skill_effects
+
+    for effect in selected_skill_effects(data, mech, build, build.get("skills")):
+        for contribution in effect.get("contributions") or ():
+            collector.add(
+                {
+                    "name": contribution.get("name"),
+                    "display_name": contribution.get("display_name"),
+                    "value": contribution.get("value"),
+                },
+                contribution.get("source") or "Skills",
+                sourceKind="skill",
+            )
 
     return collector.resolve()
 

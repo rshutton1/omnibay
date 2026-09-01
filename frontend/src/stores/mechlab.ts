@@ -7,6 +7,7 @@ import { defineStore } from 'pinia'
 import { engine } from '@/engine/client'
 import { bootEngine } from '@/engine/runtime'
 import type { BuildState, CalcResult, EquipmentItem, MechDetail, UpgradeOption } from '@/types'
+import type { SkillTree } from '@/types.skills'
 
 interface State {
   mech: MechDetail | null
@@ -17,6 +18,8 @@ interface State {
   loading: boolean
   error: string | null
   exportedCode: string | null
+  skillTree: SkillTree | null
+  skillsLoading: boolean
 }
 
 export const useMechlabStore = defineStore('mechlab', {
@@ -29,15 +32,27 @@ export const useMechlabStore = defineStore('mechlab', {
     loading: false,
     error: null,
     exportedCode: null,
+    skillTree: null,
+    skillsLoading: false,
   }),
 
   getters: {
+    skillPointsSpent: (state) => state.build?.skills?.length ?? 0,
+    skillPointsMax: (state) => state.skillTree?.max_points ?? 91,
     isOverweight: (state) => state.result?.tonnage.overweight ?? false,
     warnings: (state) => state.result?.warnings ?? [],
   },
 
   actions: {
-    async loadMech(reference: string) {
+    /**
+     * Load a mech, or keep what is already there.
+     *
+     * Views call this on mount, so navigating between the lab and the skill
+     * tree would otherwise reset the build - and silently discard the pilot's
+     * skill selection. Pass `force` to deliberately start over.
+     */
+    async loadMech(reference: string, force = false) {
+      if (!force && this.mech?.name === reference && this.build) return
       this.loading = true
       this.error = null
       this.exportedCode = null
@@ -55,10 +70,65 @@ export const useMechlabStore = defineStore('mechlab', {
           this.equipment = catalogue.equipment
           this.upgrades = catalogue.upgrades
         }
+        this.skillTree = null
       } catch (error) {
         this.error = error instanceof Error ? error.message : String(error)
       } finally {
         this.loading = false
+      }
+    },
+
+    async loadSkillTree() {
+      if (!this.mech) return
+      this.skillsLoading = true
+      try {
+        this.skillTree = await engine.skillTree(this.mech.name, this.build)
+      } catch (error) {
+        this.error = error instanceof Error ? error.message : String(error)
+      } finally {
+        this.skillsLoading = false
+      }
+    },
+
+    /**
+     * Toggle a skill node.
+     *
+     * Selecting pulls in the rest of its chain; deselecting drops everything
+     * that depended on it. The engine normalises either way, so this only has
+     * to be close enough to feel immediate.
+     */
+    async toggleSkill(node: { name: string; order: number; selected: boolean }, branchNodes: readonly { name: string; order: number }[]) {
+      if (!this.mech || !this.build) return
+      const current = new Set(this.build.skills ?? [])
+
+      if (node.selected) {
+        // Drop this node and everything further along the same chain.
+        for (const candidate of branchNodes) {
+          if (candidate.order >= node.order) current.delete(candidate.name)
+        }
+      } else {
+        for (const candidate of branchNodes) {
+          if (candidate.order <= node.order) current.add(candidate.name)
+        }
+      }
+      await this.applySkills([...current])
+    },
+
+    async clearSkills() {
+      await this.applySkills([])
+    },
+
+    async applySkills(selection: string[]) {
+      if (!this.mech || !this.build) return
+      try {
+        const response = await engine.setSkills(this.mech.name, this.build, selection)
+        this.build = response.build
+        this.result = response.result
+        this.exportedCode = null
+        this.error = null
+        await this.loadSkillTree()
+      } catch (error) {
+        this.error = error instanceof Error ? error.message : String(error)
       }
     },
 
@@ -164,6 +234,7 @@ export const useMechlabStore = defineStore('mechlab', {
     async resetToStock() {
       if (!this.mech) return
       const stock = await engine.stockBuild(this.mech.name)
+      this.skillTree = null
       this.build = stock.build
       this.result = stock.result
       this.exportedCode = null
