@@ -22,7 +22,7 @@ const emit = defineEmits<{ (event: 'toggle', node: SkillNode): void }>()
 const SCALE = 0.74
 const NODE = 80 * SCALE
 const PADDING = 16
-const LABEL_SPACE = 26
+const LABEL_SPACE = 46
 
 const nodes = computed(() =>
   props.category.nodes.map((node) => ({
@@ -53,18 +53,87 @@ const links = computed(() =>
     .filter((entry): entry is NonNullable<typeof entry> => entry !== null),
 )
 
-const labels = computed(() =>
-  props.category.branches.map((branch) => ({
-    ...branch,
-    left: branch.x * SCALE + PADDING - 4,
-    top: branch.y * SCALE + LABEL_SPACE - 20 + PADDING,
-  })),
-)
+/**
+ * Label width, estimated from character count. The font and letter-spacing are
+ * uniform, and measurement against rendered labels put this at ~7.4-8.3px per
+ * character; the upper end is used so the estimate never runs short and lets a
+ * collision through.
+ */
+function labelWidth(branch: { label: string; taken: number; total: number }): number {
+  const text = `${branch.label}${branch.taken}/${branch.total}`.replace(/\s+/g, '')
+  return text.length * 8.4
+}
 
-const size = computed(() => ({
-  width: props.category.width * SCALE + NODE + PADDING * 2,
-  height: props.category.height * SCALE + NODE + LABEL_SPACE + PADDING * 2,
-}))
+const LABEL_HEIGHT = 18
+const LABEL_LIFT = 22
+
+function overlaps(
+  a: { x: number; y: number; w: number; h: number },
+  b: { x: number; y: number; w: number; h: number },
+): boolean {
+  return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y
+}
+
+/**
+ * Branch headings sit above their first node where there is room. Where a tree
+ * branches sideways that spot is often taken, so each label searches outward
+ * from its ideal position and takes the nearest clear slot. If nothing is clear
+ * the heading is dropped rather than drawn over a node — every node already
+ * shows its own name, so only the taken/total count is lost.
+ */
+const labels = computed(() => {
+  const nodeRects = nodes.value.map((entry) => ({
+    x: entry.x + PADDING,
+    y: entry.y + PADDING,
+    w: NODE,
+    h: NODE,
+  }))
+  const placed: { x: number; y: number; w: number; h: number }[] = []
+
+  return props.category.branches
+    .map((branch) => {
+      const w = labelWidth(branch)
+      const anchorX = branch.x * SCALE + PADDING - 4
+      const anchorY = branch.y * SCALE + LABEL_SPACE + PADDING
+
+      // Offsets ordered by how far they stray from directly-above.
+      const candidates: { x: number; y: number; cost: number }[] = []
+      for (const dy of [-LABEL_LIFT, -LABEL_LIFT - 21, -LABEL_LIFT - 42, NODE + 6]) {
+        for (const dx of [0, NODE + 10, -w - 10, (NODE + 10) * 2, -(w + 10) * 2]) {
+          candidates.push({
+            x: anchorX + dx,
+            y: anchorY + dy,
+            cost: Math.abs(dy + LABEL_LIFT) + Math.abs(dx) * 0.6,
+          })
+        }
+      }
+      candidates.sort((a, b) => a.cost - b.cost)
+
+      const spot = candidates.find((candidate) => {
+        if (candidate.x < 0) return false
+        const rect = { x: candidate.x, y: candidate.y, w, h: LABEL_HEIGHT }
+        return (
+          !nodeRects.some((node) => overlaps(rect, node)) &&
+          !placed.some((other) => overlaps(rect, other))
+        )
+      })
+      if (!spot) return null
+
+      placed.push({ x: spot.x, y: spot.y, w, h: LABEL_HEIGHT })
+      return { ...branch, left: spot.x, top: spot.y }
+    })
+    .filter((entry): entry is NonNullable<typeof entry> => entry !== null)
+})
+
+const size = computed(() => {
+  const base = {
+    width: props.category.width * SCALE + NODE + PADDING * 2,
+    height: props.category.height * SCALE + NODE + LABEL_SPACE + PADDING * 2,
+  }
+  // A label pushed sideways can reach past the rightmost node.
+  const widest = Math.max(base.width, ...labels.value.map((l) => l.left + labelWidth(l) + PADDING))
+  return { width: widest, height: base.height }
+})
 
 /**
  * Four states, because "can I click this" and "is this the next step" are
