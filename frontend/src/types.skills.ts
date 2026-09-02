@@ -1,17 +1,22 @@
-/** A single skill node, with its value resolved for the current mech. */
+/** A single skill node, positioned and valued for the current mech. */
 export interface SkillNode {
   name: string
-  /** Position in its branch chain, 1-based. */
-  order: number
-  column: number
-  row: number
+  /** The game's display name, e.g. "Speed Tweak 1". */
+  label: string
+  /** The branch heading it sits under, e.g. "Speed Tweak". */
+  branch: string
+  /** Position within its category, in the game's own units. */
+  x: number
+  y: number
   selected: boolean
-  /** Selectable right now — usable, and its prerequisite is taken. */
+  /** Prerequisite already taken, so this is the next step. */
   available: boolean
   /** Applies to this mech at all (jump jet nodes need jump jets). */
   usable: boolean
   blocked_reason: string
   requires: string | null
+  /** Points a click would spend, including any unmet prerequisites. */
+  cost: number
   effects: readonly {
     name: string
     display_name: string
@@ -20,17 +25,23 @@ export interface SkillNode {
   }[]
 }
 
-export interface SkillBranch {
-  key: string
-  subcategory: string
+export interface SkillBranchLabel {
   label: string
-  nodes: readonly SkillNode[]
+  x: number
+  y: number
+  taken: number
+  total: number
 }
 
 export interface SkillCategory {
   key: string
   name: string
-  branches: readonly SkillBranch[]
+  width: number
+  height: number
+  nodes: readonly SkillNode[]
+  /** Prerequisite links, as [from, to] node names. */
+  edges: readonly (readonly [string, string])[]
+  branches: readonly SkillBranchLabel[]
 }
 
 export interface SkillTree {
@@ -44,15 +55,4 @@ export interface SkillTree {
     value_text: string
     source_text: string
   }[]
-}
-
-export interface SkillSelectionResult {
-  build: unknown
-  result: unknown
-  skills: {
-    selected: string[]
-    dropped: string[]
-    spent: number
-    max_points: number
-  }
 }

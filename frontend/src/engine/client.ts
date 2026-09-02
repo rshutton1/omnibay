@@ -73,6 +73,12 @@ export const engine = {
       (m) => m.set_skills(reference, JSON.stringify(build), JSON.stringify(selection)),
     ),
 
+  /** Add or remove one node; the engine resolves prerequisites and dependents. */
+  toggleSkill: (reference: string, build: BuildState, nodeName: string) =>
+    callEngine<BuildResponse & { skills: { selected: string[]; dropped: string[]; spent: number; max_points: number } }>(
+      (m) => m.toggle_skill(reference, JSON.stringify(build), nodeName),
+    ),
+
   exportCode: (reference: string, build: BuildState) =>
     callEngine<{ code: string }>((m) => m.export_code(reference, JSON.stringify(build))),
 

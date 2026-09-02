@@ -47,6 +47,7 @@ interface BridgeModule {
   weapon_stats(reference: string, itemId: number, buildJson: string): string
   get_skill_tree(reference: string, buildJson: string): string
   set_skills(reference: string, buildJson: string, selectionJson: string): string
+  toggle_skill(reference: string, buildJson: string, nodeName: string): string
   calculate(reference: string, buildJson: string): string
   export_code(reference: string, buildJson: string): string
   import_code(code: string): string

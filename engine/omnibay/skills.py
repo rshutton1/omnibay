@@ -13,12 +13,12 @@ Two things make skills different from other quirks:
 * **Selection is constrained.** Nodes within a branch form a chain, and the
   whole selection is capped at the game's 91 skill points.
 
-A note on the chain rule: the extracted data records each node's grid position
-but not the links between them, so MWO's exact prerequisite graph is not
-recoverable from it. Every branch does however name its nodes in order
-(`Cooldown1` ... `Cooldown16`), and all 48 branches form a clean 1..N run, so
-the chain is derived from that ordering: node N requires node N-1 in the same
-branch.
+Prerequisites and layout come from `data/skill-graph.json`, because the game
+extract records each node's effects and grid position but not the links between
+nodes. The real tree crosses branches - Kinetic Burst 4 unlocks Speed Tweak 1 -
+so no per-branch rule reproduces it. That file also carries the game's own
+display labels, which differ from the extract's internal names in a few places.
+See engine/tools/build_skill_graph.py.
 """
 import re
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Set, Tuple
@@ -175,16 +175,47 @@ def _node_index(data: GameData) -> Dict[str, Dict[str, Any]]:
     return index
 
 
+def _parents(data: GameData) -> Dict[str, str]:
+    """Node -> the node that unlocks it. The graph is a forest, so at most one."""
+    parents: Dict[str, str] = {}
+    for source, target in data.skill_graph.get("edges") or ():
+        parents[target] = source
+    return parents
+
+
 def prerequisite_of(data: GameData, name: str) -> Optional[str]:
     """The node that must be taken before this one, if any."""
-    node = _node_index(data).get(name)
-    if not node:
-        return None
-    stem, order = node_stem_and_order(name)
-    if order <= 1:
-        return None
-    candidate = "{0}{1}".format(stem, order - 1)
-    return candidate if candidate in _node_index(data) else None
+    return _parents(data).get(name)
+
+
+def chain_to_root(data: GameData, name: str) -> List[str]:
+    """The node and everything needed to reach it, root first."""
+    parents = _parents(data)
+    chain: List[str] = []
+    seen: Set[str] = set()
+    cursor: Optional[str] = name
+    while cursor and cursor not in seen:
+        seen.add(cursor)
+        chain.append(cursor)
+        cursor = parents.get(cursor)
+    chain.reverse()
+    return chain
+
+
+def dependents_of(data: GameData, name: str) -> Set[str]:
+    """Everything that would become unreachable if this node were dropped."""
+    children: Dict[str, List[str]] = {}
+    for source, target in data.skill_graph.get("edges") or ():
+        children.setdefault(source, []).append(target)
+    found: Set[str] = set()
+    stack = [name]
+    while stack:
+        current = stack.pop()
+        for child in children.get(current, ()):
+            if child not in found:
+                found.add(child)
+                stack.append(child)
+    return found
 
 
 def normalize_selection(
@@ -204,12 +235,7 @@ def normalize_selection(
     resolved: List[str] = []
     seen: Set[str] = set()
     for name in wanted:
-        chain: List[str] = []
-        cursor: Optional[str] = name
-        while cursor and cursor not in seen:
-            chain.append(cursor)
-            cursor = prerequisite_of(data, cursor)
-        for entry in reversed(chain):
+        for entry in chain_to_root(data, name):
             if entry not in seen:
                 seen.add(entry)
                 resolved.append(entry)
@@ -226,6 +252,28 @@ def normalize_selection(
         dropped.extend(usable[MAX_SKILL_POINTS:])
         usable = usable[:MAX_SKILL_POINTS]
     return usable, dropped
+
+
+def toggle_selection(
+    data: GameData,
+    mech: Dict[str, Any],
+    build: Dict[str, Any],
+    name: str,
+    selected: Optional[Sequence[str]] = None,
+) -> Tuple[List[str], List[str]]:
+    """Add or remove a node, keeping the selection legal either way.
+
+    Adding pulls in the prerequisites the node needs, which may sit in another
+    branch. Removing also drops whatever depended on it - otherwise those
+    dependents would simply pull it back in.
+    """
+    current = list(selected or ())
+    if name in current:
+        doomed = dependents_of(data, name) | {name}
+        wanted = [entry for entry in current if entry not in doomed]
+    else:
+        wanted = current + [name]
+    return normalize_selection(data, mech, build, wanted)
 
 
 def selected_skill_effects(
@@ -265,68 +313,130 @@ def selected_skill_effects(
     return collector.resolve()
 
 
+def selection_cost(data: GameData, name: str, chosen: Set[str]) -> int:
+    """Points a click would spend: the node plus any prerequisites not yet taken."""
+    return sum(1 for entry in chain_to_root(data, name) if entry not in chosen)
+
+
 def skill_tree(
     data: GameData,
     mech: Dict[str, Any],
     build: Dict[str, Any],
     selected: Optional[Sequence[str]] = None,
 ) -> Dict[str, Any]:
-    """The whole tree, with per-node values resolved for this mech."""
-    chosen = set(selected or ())
-    categories_payload = []
-    branches_by_category = build_branches(data)
+    """The whole tree: real positions, real edges, values resolved for this mech.
 
+    Positions come from the graph file and are emitted relative to each
+    category's own origin, so the client can lay a category out without knowing
+    where it sits in the game's full-width strip.
+    """
+    chosen = set(selected or ())
+    graph_nodes: Dict[str, Any] = data.skill_graph.get("nodes") or {}
+    graph_edges = data.skill_graph.get("edges") or []
+    index = _node_index(data)
+
+    by_category: Dict[str, List[str]] = {}
+    for name, meta in graph_nodes.items():
+        by_category.setdefault(meta.get("category") or "", []).append(name)
+
+    categories_payload = []
     for category in (data.skills.get("categories") or ()):
         key = category.get("key") or ""
-        branch_payload = []
-        for branch in branches_by_category.get(key, ()):
-            nodes_payload = []
-            for position, node in enumerate(branch["nodes"]):
-                name = node["name"]
-                allowed, reason = node_requirements_met(data, node, mech, build)
-                prerequisite = prerequisite_of(data, name)
-                effects = []
-                for effect in node.get("effects") or ():
-                    value = resolve_effect_value(effect, mech)
-                    if not value:
-                        continue
-                    # Named distinctly: `name` above is the node, this is the quirk.
-                    effect_name = str(effect.get("name") or "").lower()
-                    effects.append(
-                        {
-                            "name": effect_name,
-                            "display_name": effect.get("display_name") or effect.get("name"),
-                            "value": value,
-                            # Formatted by the engine so `_multiplier` reads as a
-                            # percentage and `_additive` as a flat number.
-                            "value_text": quirk_value_text(effect_name, value),
-                        }
-                    )
-                nodes_payload.append(
+        names = by_category.get(key, [])
+        if not names:
+            continue
+
+        origin_x = min(graph_nodes[n]["x"] for n in names)
+        origin_y = min(graph_nodes[n]["y"] for n in names)
+
+        nodes_payload = []
+        for name in sorted(names, key=lambda n: (graph_nodes[n]["y"], graph_nodes[n]["x"])):
+            meta = graph_nodes[name]
+            node = index.get(name)
+            if not node:
+                continue
+            allowed, reason = node_requirements_met(data, node, mech, build)
+            prerequisite = prerequisite_of(data, name)
+
+            effects = []
+            for effect in node.get("effects") or ():
+                value = resolve_effect_value(effect, mech)
+                if not value:
+                    continue
+                # Named distinctly: `name` above is the node, this is the quirk.
+                effect_name = str(effect.get("name") or "").lower()
+                effects.append(
                     {
-                        "name": name,
-                        "order": position + 1,
-                        "column": node.get("column"),
-                        "row": node.get("row"),
-                        "selected": name in chosen,
-                        "available": allowed
-                        and (prerequisite is None or prerequisite in chosen),
-                        "usable": allowed,
-                        "blocked_reason": reason,
-                        "requires": prerequisite,
-                        "effects": effects,
+                        "name": effect_name,
+                        "display_name": effect.get("display_name") or effect.get("name"),
+                        "value": value,
+                        # Formatted by the engine so `_multiplier` reads as a
+                        # percentage and `_additive` as a flat number.
+                        "value_text": quirk_value_text(effect_name, value),
                     }
                 )
-            branch_payload.append(
+
+            nodes_payload.append(
                 {
-                    "key": "{0}:{1}".format(key, branch["subcategory"]),
-                    "subcategory": branch["subcategory"],
-                    "label": _humanise(branch["subcategory"]),
-                    "nodes": nodes_payload,
+                    "name": name,
+                    "label": meta.get("label") or name,
+                    "branch": meta.get("branch") or "",
+                    "x": meta["x"] - origin_x,
+                    "y": meta["y"] - origin_y,
+                    "selected": name in chosen,
+                    "available": allowed
+                    and (prerequisite is None or prerequisite in chosen),
+                    "usable": allowed,
+                    "blocked_reason": reason,
+                    "requires": prerequisite,
+                    "cost": selection_cost(data, name, chosen),
+                    "effects": effects,
                 }
             )
+
+        # Branch headings sit above the first node of each branch.
+        headings: Dict[str, Dict[str, Any]] = {}
+        for name in names:
+            meta = graph_nodes[name]
+            branch = meta.get("branch") or ""
+            current = headings.get(branch)
+            if current is None or (meta["y"], meta["x"]) < (current["_y"], current["_x"]):
+                headings[branch] = {
+                    "label": branch,
+                    "x": meta["x"] - origin_x,
+                    "y": meta["y"] - origin_y,
+                    "_x": meta["x"],
+                    "_y": meta["y"],
+                }
+        branches_payload = []
+        for branch, heading in sorted(headings.items(), key=lambda kv: (kv[1]["y"], kv[1]["x"])):
+            members = [n for n in names if (graph_nodes[n].get("branch") or "") == branch]
+            branches_payload.append(
+                {
+                    "label": heading["label"],
+                    "x": heading["x"],
+                    "y": heading["y"],
+                    "taken": sum(1 for n in members if n in chosen),
+                    "total": len(members),
+                }
+            )
+
         categories_payload.append(
-            {"key": key, "name": category.get("name") or key, "branches": branch_payload}
+            {
+                "key": key,
+                "name": category.get("name") or key,
+                "width": max(graph_nodes[n]["x"] for n in names) - origin_x,
+                "height": max(graph_nodes[n]["y"] for n in names) - origin_y,
+                "nodes": nodes_payload,
+                "edges": [
+                    [a, b]
+                    for a, b in graph_edges
+                    if a in graph_nodes
+                    and b in graph_nodes
+                    and graph_nodes[a].get("category") == key
+                ],
+                "branches": branches_payload,
+            }
         )
 
     return {

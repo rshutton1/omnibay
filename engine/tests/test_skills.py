@@ -10,12 +10,22 @@ from omnibay.build import build_from_stock_loadout, effective_quirks
 from omnibay.calculate import calculate_build
 from omnibay.skills import (
     MAX_SKILL_POINTS,
-    node_stem_and_order,
+    chain_to_root,
+    dependents_of,
     normalize_selection,
     prerequisite_of,
     selected_skill_effects,
     skill_tree,
+    toggle_selection,
 )
+
+
+def all_nodes(tree):
+    return [node for category in tree["categories"] for node in category["nodes"]]
+
+
+def node_named(tree, name):
+    return next(n for n in all_nodes(tree) if n["name"] == name)
 
 
 @pytest.fixture
@@ -32,18 +42,7 @@ def test_tree_covers_every_category_and_node(data, hunchback):
     tree = skill_tree(data, mech, build, [])
     assert tree["max_points"] == MAX_SKILL_POINTS == 91
     assert len(tree["categories"]) == 7
-    total = sum(
-        len(branch["nodes"]) for c in tree["categories"] for branch in c["branches"]
-    )
-    assert total == 239
-
-
-@pytest.mark.parametrize(
-    "name,stem,order",
-    [("Cooldown12", "Cooldown", 12), ("Range1", "Range", 1), ("AdvancedZoom", "AdvancedZoom", 1)],
-)
-def test_node_ordering_is_read_from_the_name(name, stem, order):
-    assert node_stem_and_order(name) == (stem, order)
+    assert len(all_nodes(tree)) == 239
 
 
 def test_chain_prerequisites(data):
@@ -68,12 +67,7 @@ def test_selecting_a_deep_node_pulls_in_its_chain(data, hunchback):
 
 def test_selection_is_capped_at_the_point_limit(data, hunchback):
     mech, build = hunchback
-    every_node = [
-        node["name"]
-        for category in skill_tree(data, mech, build, [])["categories"]
-        for branch in category["branches"]
-        for node in branch["nodes"]
-    ]
+    every_node = [n["name"] for n in all_nodes(skill_tree(data, mech, build, []))]
     selection, dropped = normalize_selection(data, mech, build, every_node)
     assert len(selection) == MAX_SKILL_POINTS
     assert dropped
@@ -93,7 +87,7 @@ def test_jump_jet_skills_are_unavailable_without_jump_jets(data, hunchback):
 
     tree = skill_tree(data, mech, build, [])
     jumpjets = next(c for c in tree["categories"] if c["key"] == "jumpjets")
-    gated = [n for b in jumpjets["branches"] for n in b["nodes"] if not n["usable"]]
+    gated = [n for n in jumpjets["nodes"] if not n["usable"]]
     assert gated, "expected jump jet nodes to be gated"
     assert all("jump jet" in n["blocked_reason"].lower() for n in gated)
 
@@ -198,14 +192,7 @@ def test_tree_reports_node_names_not_quirk_names(data, hunchback):
     """Regression: the effect loop once shadowed the node's own name."""
     mech, build = hunchback
     tree = skill_tree(data, mech, build, [])
-    firepower = next(c for c in tree["categories"] if c["key"] == "firepower")
-    cooldown = next(b for b in firepower["branches"] if b["subcategory"] == "Cooldown")
-
-    assert [n["name"] for n in cooldown["nodes"][:3]] == [
-        "Cooldown1",
-        "Cooldown2",
-        "Cooldown3",
-    ]
+    assert node_named(tree, "Cooldown3")["name"] == "Cooldown3"
     # A node name must round-trip through selection.
     selection, dropped = normalize_selection(data, mech, build, ["Cooldown3"])
     assert selection and not dropped
@@ -215,9 +202,113 @@ def test_additive_effects_are_not_rendered_as_percentages(data, hunchback):
     """Magazine capacity adds rounds; it must not read as +2000%."""
     mech, build = hunchback
     tree = skill_tree(data, mech, build, [])
-    firepower = next(c for c in tree["categories"] if c["key"] == "firepower")
-    magazine = next(
-        b for b in firepower["branches"] if b["subcategory"] == "MagazineCapacity"
-    )
-    text = magazine["nodes"][0]["effects"][0]["value_text"]
+    text = node_named(tree, "MagazineCapacity1")["effects"][0]["value_text"]
     assert "%" not in text, text
+
+
+# --- the real graph --------------------------------------------------------
+
+
+def test_prerequisites_cross_branches(data):
+    """Speed Tweak is gated behind Kinetic Burst, not behind Speed Tweak 1."""
+    assert prerequisite_of(data, "SpeedTweak1") == "KineticBurst4"
+    assert prerequisite_of(data, "SpeedTweak2") == "KineticBurst5"
+    assert prerequisite_of(data, "SeismicSensor1") == "TargetInfoGathering3"
+
+
+def test_taking_a_gated_node_pulls_in_the_other_branch(data, hunchback):
+    mech, build = hunchback
+    selection, _ = normalize_selection(data, mech, build, ["SpeedTweak3"])
+    assert selection == [
+        "KineticBurst1",
+        "KineticBurst2",
+        "KineticBurst3",
+        "KineticBurst4",
+        "KineticBurst5",
+        "KineticBurst6",
+        "SpeedTweak3",
+    ]
+
+
+def test_dropping_a_node_drops_what_depended_on_it(data, hunchback):
+    mech, build = hunchback
+    taken, _ = normalize_selection(data, mech, build, ["SpeedTweak3"])
+    remaining, _ = toggle_selection(data, mech, build, "KineticBurst4", taken)
+
+    assert remaining == ["KineticBurst1", "KineticBurst2", "KineticBurst3"]
+    assert "SpeedTweak3" not in remaining
+
+
+def test_toggle_is_reversible(data, hunchback):
+    mech, build = hunchback
+    added, _ = toggle_selection(data, mech, build, "Cooldown1", [])
+    removed, _ = toggle_selection(data, mech, build, "Cooldown1", added)
+    assert added == ["Cooldown1"]
+    assert removed == []
+
+
+def test_graph_is_a_forest_with_entry_points(data):
+    """Every node has at most one prerequisite, and each category has roots."""
+    nodes = data.skill_graph["nodes"]
+    parents = {target for _source, target in data.skill_graph["edges"]}
+    roots = [n for n in nodes if n not in parents]
+    assert len(nodes) == 239
+    assert len(data.skill_graph["edges"]) == 197
+    assert len(roots) == 42
+    assert {nodes[r]["category"] for r in roots} == {
+        "firepower",
+        "survival",
+        "mobility",
+        "jumpjets",
+        "operations",
+        "sensors",
+        "auxiliary",
+    }
+
+
+def test_chains_terminate(data):
+    """No cycles: every node reaches a root in finite steps."""
+    for name in data.skill_graph["nodes"]:
+        chain = chain_to_root(data, name)
+        assert chain[-1] == name
+        assert len(chain) == len(set(chain))
+
+
+def test_branch_labels_use_the_games_names(data, hunchback):
+    """The extract's internal names are not what the game displays.
+
+    `ShockAbsorbance` in the extract is the survival skill the game calls
+    Overheat Damage; the game's Shock Absorbance is the jump jet skill the
+    extract calls `Vectoring`.
+    """
+    mech, build = hunchback
+    tree = skill_tree(data, mech, build, [])
+
+    survival = next(c for c in tree["categories"] if c["key"] == "survival")
+    jumpjets = next(c for c in tree["categories"] if c["key"] == "jumpjets")
+
+    assert "Overheat Damage" in {b["label"] for b in survival["branches"]}
+    assert "Shock Absorbance" not in {b["label"] for b in survival["branches"]}
+    assert "Shock Absorbance" in {b["label"] for b in jumpjets["branches"]}
+
+    assert node_named(tree, "ShockAbsorbance1")["label"] == "Overheat Damage 1"
+    assert node_named(tree, "Vectoring1")["label"] == "Shock Absorbance 1"
+
+
+def test_every_node_has_a_position_and_label(data, hunchback):
+    mech, build = hunchback
+    for node in all_nodes(skill_tree(data, mech, build, [])):
+        assert node["label"], node["name"]
+        assert node["branch"], node["name"]
+        assert node["x"] >= 0 and node["y"] >= 0, node["name"]
+
+
+def test_cost_counts_unmet_prerequisites(data, hunchback):
+    mech, build = hunchback
+    tree = skill_tree(data, mech, build, [])
+    assert node_named(tree, "KineticBurst1")["cost"] == 1
+    assert node_named(tree, "SpeedTweak1")["cost"] == 5
+
+    build["skills"], _ = normalize_selection(data, mech, build, ["KineticBurst4"])
+    tree = skill_tree(data, mech, build, build["skills"])
+    assert node_named(tree, "SpeedTweak1")["cost"] == 1

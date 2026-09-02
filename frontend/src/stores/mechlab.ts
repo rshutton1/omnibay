@@ -91,27 +91,21 @@ export const useMechlabStore = defineStore('mechlab', {
     },
 
     /**
-     * Toggle a skill node.
-     *
-     * Selecting pulls in the rest of its chain; deselecting drops everything
-     * that depended on it. The engine normalises either way, so this only has
-     * to be close enough to feel immediate.
+     * Toggle a skill node. The engine owns the graph, so it decides what else
+     * comes along (prerequisites) or falls away (dependents).
      */
-    async toggleSkill(node: { name: string; order: number; selected: boolean }, branchNodes: readonly { name: string; order: number }[]) {
+    async toggleSkill(node: { name: string }) {
       if (!this.mech || !this.build) return
-      const current = new Set(this.build.skills ?? [])
-
-      if (node.selected) {
-        // Drop this node and everything further along the same chain.
-        for (const candidate of branchNodes) {
-          if (candidate.order >= node.order) current.delete(candidate.name)
-        }
-      } else {
-        for (const candidate of branchNodes) {
-          if (candidate.order <= node.order) current.add(candidate.name)
-        }
+      try {
+        const response = await engine.toggleSkill(this.mech.name, this.build, node.name)
+        this.build = response.build
+        this.result = response.result
+        this.exportedCode = null
+        this.error = null
+        await this.loadSkillTree()
+      } catch (error) {
+        this.error = error instanceof Error ? error.message : String(error)
       }
-      await this.applySkills([...current])
     },
 
     async clearSkills() {

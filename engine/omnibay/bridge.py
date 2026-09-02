@@ -16,7 +16,12 @@ from omnibay import build as B
 from omnibay import codec
 from omnibay import items as I
 from omnibay.calculate import calculate_build
-from omnibay.skills import MAX_SKILL_POINTS, normalize_selection, skill_tree
+from omnibay.skills import (
+    MAX_SKILL_POINTS,
+    normalize_selection,
+    skill_tree,
+    toggle_selection,
+)
 from omnibay.weapon_stats import equipment_tooltip, weapon_tooltip
 from omnibay.constants import COMPONENT_ORDER, WEIGHT_CLASS_ORDER
 from omnibay.loader import GameData
@@ -362,6 +367,31 @@ def set_skills(reference: str, build_json: str, selection_json: str) -> str:
     requested = json.loads(selection_json) or []
 
     selection, dropped = normalize_selection(data, mech, build, requested)
+    build["skills"] = selection
+    return _ok(
+        {
+            "build": build,
+            "result": calculate_build(data, mech, build),
+            "skills": {
+                "selected": selection,
+                "dropped": dropped,
+                "spent": len(selection),
+                "max_points": MAX_SKILL_POINTS,
+            },
+        }
+    )
+
+
+@_guard
+def toggle_skill(reference: str, build_json: str, node_name: str) -> str:
+    """Add or remove one skill node, resolving prerequisites and dependents."""
+    data = _require_data()
+    mech = _require_mech(reference)
+    build = json.loads(build_json)
+
+    selection, dropped = toggle_selection(
+        data, mech, build, node_name, build.get("skills") or []
+    )
     build["skills"] = selection
     return _ok(
         {

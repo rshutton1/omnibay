@@ -11,7 +11,7 @@ import EngineBoot from '@/components/EngineBoot.vue'
 import SkillCanvas from '@/components/SkillCanvas.vue'
 import { engineIsReady } from '@/engine/runtime'
 import { useMechlabStore } from '@/stores/mechlab'
-import type { SkillBranch } from '@/types.skills'
+import type { SkillCategory } from '@/types.skills'
 
 const props = defineProps<{ reference: string }>()
 const store = useMechlabStore()
@@ -34,9 +34,9 @@ const spent = computed(() => store.build?.skills?.length ?? 0)
 const max = computed(() => store.skillTree?.max_points ?? 91)
 const remaining = computed(() => max.value - spent.value)
 
-/** Points already committed inside one branch, for the category tab count. */
-function branchSpend(branch: SkillBranch): number {
-  return branch.nodes.filter((n) => n.selected).length
+/** Points committed inside a category, for its tab badge. */
+function categorySpend(entry: SkillCategory): number {
+  return entry.nodes.filter((n) => n.selected).length
 }
 </script>
 
@@ -74,9 +74,7 @@ function branchSpend(branch: SkillBranch): number {
         @click="active = entry.key"
       >
         {{ entry.name }}
-        <span class="count mono">
-          {{ entry.branches.reduce((total, b) => total + branchSpend(b), 0) }}
-        </span>
+        <span class="count mono">{{ categorySpend(entry) }}</span>
       </button>
     </nav>
 
@@ -84,7 +82,7 @@ function branchSpend(branch: SkillBranch): number {
       v-if="category"
       :category="category"
       :remaining="remaining"
-      @toggle="(node, branch) => store.toggleSkill(node, branch.nodes)"
+      @toggle="(node) => store.toggleSkill(node)"
     />
 
     <section v-if="store.skillTree.effects.length" class="totals panel clip">

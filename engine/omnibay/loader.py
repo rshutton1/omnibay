@@ -90,6 +90,10 @@ class GameData:
             self.data_dir, "localization.json", {}
         )
         self.skills: Dict[str, Any] = _read_optional_json(self.data_dir, "skills.json", {})
+        # Node layout and prerequisites; see engine/tools/build_skill_graph.py.
+        self.skill_graph: Dict[str, Any] = _read_optional_json(
+            self.data_dir, "skill-graph.json", {"nodes": {}, "edges": []}
+        )
         self.shake_damping_mechs = _read_optional_json(
             self.data_dir, "shake_damping_mechs.json", []
         )

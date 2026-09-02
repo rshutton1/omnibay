@@ -68,7 +68,8 @@ def test_bundled_data_supports_every_engine_feature(bundle):
     assert calculate_build(data, mech, build)["tonnage"]["used"] == 50.0
     assert weapon_tooltip(data, data.item(1000), [])["name"] == "AC/20"
 
+    assert data.skill_graph.get("nodes"), "skill graph needs skill-graph.json in the bundle"
     tree = skill_tree(data, mech, build, [])
     assert len(tree["categories"]) == 7
-    nodes = sum(len(b["nodes"]) for c in tree["categories"] for b in c["branches"])
-    assert nodes == 239
+    assert sum(len(c["nodes"]) for c in tree["categories"]) == 239
+    assert sum(len(c["edges"]) for c in tree["categories"]) == 197

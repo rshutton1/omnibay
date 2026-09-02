@@ -1,0 +1,2468 @@
+{
+ "source": "https://www.mwoskilltree.com/skilltree",
+ "nodes": {
+  "Cooldown1": {
+   "label": "Cooldown 1",
+   "branch": "Cooldown",
+   "category": "firepower",
+   "x": 0,
+   "y": 100
+  },
+  "Cooldown3": {
+   "label": "Cooldown 3",
+   "branch": "Cooldown",
+   "category": "firepower",
+   "x": 0,
+   "y": 250
+  },
+  "Cooldown5": {
+   "label": "Cooldown 5",
+   "branch": "Cooldown",
+   "category": "firepower",
+   "x": 0,
+   "y": 400
+  },
+  "Cooldown7": {
+   "label": "Cooldown 7",
+   "branch": "Cooldown",
+   "category": "firepower",
+   "x": 0,
+   "y": 550
+  },
+  "Cooldown9": {
+   "label": "Cooldown 9",
+   "branch": "Cooldown",
+   "category": "firepower",
+   "x": 0,
+   "y": 700
+  },
+  "Cooldown11": {
+   "label": "Cooldown 11",
+   "branch": "Cooldown",
+   "category": "firepower",
+   "x": 0,
+   "y": 850
+  },
+  "Cooldown13": {
+   "label": "Cooldown 13",
+   "branch": "Cooldown",
+   "category": "firepower",
+   "x": 0,
+   "y": 1000
+  },
+  "Cooldown15": {
+   "label": "Cooldown 15",
+   "branch": "Cooldown",
+   "category": "firepower",
+   "x": 0,
+   "y": 1150
+  },
+  "Cooldown2": {
+   "label": "Cooldown 2",
+   "branch": "Cooldown",
+   "category": "firepower",
+   "x": 112,
+   "y": 175
+  },
+  "Cooldown4": {
+   "label": "Cooldown 4",
+   "branch": "Cooldown",
+   "category": "firepower",
+   "x": 112,
+   "y": 325
+  },
+  "Cooldown6": {
+   "label": "Cooldown 6",
+   "branch": "Cooldown",
+   "category": "firepower",
+   "x": 112,
+   "y": 475
+  },
+  "Cooldown8": {
+   "label": "Cooldown 8",
+   "branch": "Cooldown",
+   "category": "firepower",
+   "x": 112,
+   "y": 625
+  },
+  "Cooldown10": {
+   "label": "Cooldown 10",
+   "branch": "Cooldown",
+   "category": "firepower",
+   "x": 112,
+   "y": 775
+  },
+  "Cooldown12": {
+   "label": "Cooldown 12",
+   "branch": "Cooldown",
+   "category": "firepower",
+   "x": 112,
+   "y": 925
+  },
+  "Cooldown14": {
+   "label": "Cooldown 14",
+   "branch": "Cooldown",
+   "category": "firepower",
+   "x": 112,
+   "y": 1075
+  },
+  "Cooldown16": {
+   "label": "Cooldown 16",
+   "branch": "Cooldown",
+   "category": "firepower",
+   "x": 112,
+   "y": 1225
+  },
+  "Range1": {
+   "label": "Range 1",
+   "branch": "Range",
+   "category": "firepower",
+   "x": 225,
+   "y": 100
+  },
+  "Range3": {
+   "label": "Range 3",
+   "branch": "Range",
+   "category": "firepower",
+   "x": 225,
+   "y": 250
+  },
+  "Range5": {
+   "label": "Range 5",
+   "branch": "Range",
+   "category": "firepower",
+   "x": 225,
+   "y": 400
+  },
+  "Range7": {
+   "label": "Range 7",
+   "branch": "Range",
+   "category": "firepower",
+   "x": 225,
+   "y": 550
+  },
+  "Range9": {
+   "label": "Range 9",
+   "branch": "Range",
+   "category": "firepower",
+   "x": 225,
+   "y": 700
+  },
+  "Range11": {
+   "label": "Range 11",
+   "branch": "Range",
+   "category": "firepower",
+   "x": 225,
+   "y": 850
+  },
+  "Range13": {
+   "label": "Range 13",
+   "branch": "Range",
+   "category": "firepower",
+   "x": 225,
+   "y": 1000
+  },
+  "Range15": {
+   "label": "Range 15",
+   "branch": "Range",
+   "category": "firepower",
+   "x": 225,
+   "y": 1150
+  },
+  "Range2": {
+   "label": "Range 2",
+   "branch": "Range",
+   "category": "firepower",
+   "x": 337,
+   "y": 175
+  },
+  "Range4": {
+   "label": "Range 4",
+   "branch": "Range",
+   "category": "firepower",
+   "x": 337,
+   "y": 325
+  },
+  "Range6": {
+   "label": "Range 6",
+   "branch": "Range",
+   "category": "firepower",
+   "x": 337,
+   "y": 475
+  },
+  "Range8": {
+   "label": "Range 8",
+   "branch": "Range",
+   "category": "firepower",
+   "x": 337,
+   "y": 625
+  },
+  "Range10": {
+   "label": "Range 10",
+   "branch": "Range",
+   "category": "firepower",
+   "x": 337,
+   "y": 775
+  },
+  "Range12": {
+   "label": "Range 12",
+   "branch": "Range",
+   "category": "firepower",
+   "x": 337,
+   "y": 925
+  },
+  "Range14": {
+   "label": "Range 14",
+   "branch": "Range",
+   "category": "firepower",
+   "x": 337,
+   "y": 1075
+  },
+  "HeatGen1": {
+   "label": "Heat Gen 1",
+   "branch": "Heat Gen",
+   "category": "firepower",
+   "x": 450,
+   "y": 100
+  },
+  "HeatGen3": {
+   "label": "Heat Gen 3",
+   "branch": "Heat Gen",
+   "category": "firepower",
+   "x": 450,
+   "y": 250
+  },
+  "HeatGen5": {
+   "label": "Heat Gen 5",
+   "branch": "Heat Gen",
+   "category": "firepower",
+   "x": 450,
+   "y": 400
+  },
+  "HeatGen7": {
+   "label": "Heat Gen 7",
+   "branch": "Heat Gen",
+   "category": "firepower",
+   "x": 450,
+   "y": 550
+  },
+  "HeatGen9": {
+   "label": "Heat Gen 9",
+   "branch": "Heat Gen",
+   "category": "firepower",
+   "x": 450,
+   "y": 700
+  },
+  "HeatGen11": {
+   "label": "Heat Gen 11",
+   "branch": "Heat Gen",
+   "category": "firepower",
+   "x": 450,
+   "y": 850
+  },
+  "HeatGen13": {
+   "label": "Heat Gen 13",
+   "branch": "Heat Gen",
+   "category": "firepower",
+   "x": 450,
+   "y": 1000
+  },
+  "HeatGen2": {
+   "label": "Heat Gen 2",
+   "branch": "Heat Gen",
+   "category": "firepower",
+   "x": 562,
+   "y": 175
+  },
+  "HeatGen4": {
+   "label": "Heat Gen 4",
+   "branch": "Heat Gen",
+   "category": "firepower",
+   "x": 562,
+   "y": 325
+  },
+  "HeatGen6": {
+   "label": "Heat Gen 6",
+   "branch": "Heat Gen",
+   "category": "firepower",
+   "x": 562,
+   "y": 475
+  },
+  "HeatGen8": {
+   "label": "Heat Gen 8",
+   "branch": "Heat Gen",
+   "category": "firepower",
+   "x": 562,
+   "y": 625
+  },
+  "HeatGen10": {
+   "label": "Heat Gen 10",
+   "branch": "Heat Gen",
+   "category": "firepower",
+   "x": 562,
+   "y": 775
+  },
+  "HeatGen12": {
+   "label": "Heat Gen 12",
+   "branch": "Heat Gen",
+   "category": "firepower",
+   "x": 562,
+   "y": 925
+  },
+  "HeatGen14": {
+   "label": "Heat Gen 14",
+   "branch": "Heat Gen",
+   "category": "firepower",
+   "x": 562,
+   "y": 1075
+  },
+  "Velocity1": {
+   "label": "Velocity 1",
+   "branch": "Velocity",
+   "category": "firepower",
+   "x": 675,
+   "y": 100
+  },
+  "Velocity3": {
+   "label": "Velocity 3",
+   "branch": "Velocity",
+   "category": "firepower",
+   "x": 675,
+   "y": 250
+  },
+  "Velocity5": {
+   "label": "Velocity 5",
+   "branch": "Velocity",
+   "category": "firepower",
+   "x": 675,
+   "y": 400
+  },
+  "MagazineCapacity1": {
+   "label": "Magazine Capacity 1",
+   "branch": "Magazine Capacity",
+   "category": "firepower",
+   "x": 675,
+   "y": 550
+  },
+  "GaussCharge1": {
+   "label": "Gauss Charge 1",
+   "branch": "Gauss Charge",
+   "category": "firepower",
+   "x": 675,
+   "y": 850
+  },
+  "Velocity2": {
+   "label": "Velocity 2",
+   "branch": "Velocity",
+   "category": "firepower",
+   "x": 787,
+   "y": 175
+  },
+  "Velocity4": {
+   "label": "Velocity 4",
+   "branch": "Velocity",
+   "category": "firepower",
+   "x": 787,
+   "y": 325
+  },
+  "MagazineCapacity2": {
+   "label": "Magazine Capacity 2",
+   "branch": "Magazine Capacity",
+   "category": "firepower",
+   "x": 787,
+   "y": 625
+  },
+  "GaussCharge2": {
+   "label": "Gauss Charge 2",
+   "branch": "Gauss Charge",
+   "category": "firepower",
+   "x": 787,
+   "y": 925
+  },
+  "LaserDuration1": {
+   "label": "Laser Duration 1",
+   "branch": "Laser Duration",
+   "category": "firepower",
+   "x": 900,
+   "y": 100
+  },
+  "LaserDuration3": {
+   "label": "Laser Duration 3",
+   "branch": "Laser Duration",
+   "category": "firepower",
+   "x": 900,
+   "y": 250
+  },
+  "LBXSpread2": {
+   "label": "LBX Spread 2",
+   "branch": "LBX Spread",
+   "category": "firepower",
+   "x": 900,
+   "y": 550
+  },
+  "UACJamChance2": {
+   "label": "Enhanced UAC/RAC 2",
+   "branch": "Enhanced UAC/RAC",
+   "category": "firepower",
+   "x": 900,
+   "y": 850
+  },
+  "LaserDuration2": {
+   "label": "Laser Duration 2",
+   "branch": "Laser Duration",
+   "category": "firepower",
+   "x": 1012,
+   "y": 175
+  },
+  "LaserDuration4": {
+   "label": "Laser Duration 4",
+   "branch": "Laser Duration",
+   "category": "firepower",
+   "x": 1012,
+   "y": 325
+  },
+  "LBXSpread1": {
+   "label": "LBX Spread 1",
+   "branch": "LBX Spread",
+   "category": "firepower",
+   "x": 1012,
+   "y": 475
+  },
+  "UACJamChance1": {
+   "label": "Enhanced UAC/RAC 1",
+   "branch": "Enhanced UAC/RAC",
+   "category": "firepower",
+   "x": 1012,
+   "y": 775
+  },
+  "FlamerVentilation1": {
+   "label": "Thermal Cycling 1",
+   "branch": "Thermal Cycling",
+   "category": "firepower",
+   "x": 1125,
+   "y": 100
+  },
+  "MissileRack1": {
+   "label": "Missile Rack 1",
+   "branch": "Missile Rack",
+   "category": "firepower",
+   "x": 1125,
+   "y": 400
+  },
+  "MissileSpread1": {
+   "label": "Missile Spread 1",
+   "branch": "Missile Spread",
+   "category": "firepower",
+   "x": 1125,
+   "y": 700
+  },
+  "HighExplosive1": {
+   "label": "High Explosive 1",
+   "branch": "High Explosive",
+   "category": "firepower",
+   "x": 1125,
+   "y": 1000
+  },
+  "FlamerVentilation2": {
+   "label": "Thermal Cycling 2",
+   "branch": "Thermal Cycling",
+   "category": "firepower",
+   "x": 1237,
+   "y": 175
+  },
+  "MissileRack2": {
+   "label": "Missile Rack 2",
+   "branch": "Missile Rack",
+   "category": "firepower",
+   "x": 1237,
+   "y": 475
+  },
+  "MissileSpread2": {
+   "label": "Missile Spread 2",
+   "branch": "Missile Spread",
+   "category": "firepower",
+   "x": 1237,
+   "y": 775
+  },
+  "HighExplosive2": {
+   "label": "High Explosive 2",
+   "branch": "High Explosive",
+   "category": "firepower",
+   "x": 1237,
+   "y": 1075
+  },
+  "SkeletalDensity1": {
+   "label": "Skeletal Density 1",
+   "branch": "Skeletal Density",
+   "category": "survival",
+   "x": 1575,
+   "y": 100
+  },
+  "SkeletalDensity3": {
+   "label": "Skeletal Density 3",
+   "branch": "Skeletal Density",
+   "category": "survival",
+   "x": 1575,
+   "y": 250
+  },
+  "SkeletalDensity5": {
+   "label": "Skeletal Density 5",
+   "branch": "Skeletal Density",
+   "category": "survival",
+   "x": 1575,
+   "y": 400
+  },
+  "SkeletalDensity7": {
+   "label": "Skeletal Density 7",
+   "branch": "Skeletal Density",
+   "category": "survival",
+   "x": 1575,
+   "y": 550
+  },
+  "SkeletalDensity9": {
+   "label": "Skeletal Density 9",
+   "branch": "Skeletal Density",
+   "category": "survival",
+   "x": 1575,
+   "y": 700
+  },
+  "SkeletalDensity2": {
+   "label": "Skeletal Density 2",
+   "branch": "Skeletal Density",
+   "category": "survival",
+   "x": 1687,
+   "y": 175
+  },
+  "SkeletalDensity4": {
+   "label": "Skeletal Density 4",
+   "branch": "Skeletal Density",
+   "category": "survival",
+   "x": 1687,
+   "y": 325
+  },
+  "SkeletalDensity6": {
+   "label": "Skeletal Density 6",
+   "branch": "Skeletal Density",
+   "category": "survival",
+   "x": 1687,
+   "y": 475
+  },
+  "SkeletalDensity8": {
+   "label": "Skeletal Density 8",
+   "branch": "Skeletal Density",
+   "category": "survival",
+   "x": 1687,
+   "y": 625
+  },
+  "SkeletalDensity10": {
+   "label": "Skeletal Density 10",
+   "branch": "Skeletal Density",
+   "category": "survival",
+   "x": 1687,
+   "y": 775
+  },
+  "ArmorHardening1": {
+   "label": "Armor Hardening 1",
+   "branch": "Armor Hardening",
+   "category": "survival",
+   "x": 1800,
+   "y": 100
+  },
+  "ArmorHardening3": {
+   "label": "Armor Hardening 3",
+   "branch": "Armor Hardening",
+   "category": "survival",
+   "x": 1800,
+   "y": 250
+  },
+  "ArmorHardening5": {
+   "label": "Armor Hardening 5",
+   "branch": "Armor Hardening",
+   "category": "survival",
+   "x": 1800,
+   "y": 400
+  },
+  "ArmorHardening7": {
+   "label": "Armor Hardening 7",
+   "branch": "Armor Hardening",
+   "category": "survival",
+   "x": 1800,
+   "y": 550
+  },
+  "ArmorHardening9": {
+   "label": "Armor Hardening 9",
+   "branch": "Armor Hardening",
+   "category": "survival",
+   "x": 1800,
+   "y": 700
+  },
+  "ArmorHardening2": {
+   "label": "Armor Hardening 2",
+   "branch": "Armor Hardening",
+   "category": "survival",
+   "x": 1912,
+   "y": 175
+  },
+  "ArmorHardening4": {
+   "label": "Armor Hardening 4",
+   "branch": "Armor Hardening",
+   "category": "survival",
+   "x": 1912,
+   "y": 325
+  },
+  "ArmorHardening6": {
+   "label": "Armor Hardening 6",
+   "branch": "Armor Hardening",
+   "category": "survival",
+   "x": 1912,
+   "y": 475
+  },
+  "ArmorHardening8": {
+   "label": "Armor Hardening 8",
+   "branch": "Armor Hardening",
+   "category": "survival",
+   "x": 1912,
+   "y": 625
+  },
+  "ArmorHardening10": {
+   "label": "Armor Hardening 10",
+   "branch": "Armor Hardening",
+   "category": "survival",
+   "x": 1912,
+   "y": 775
+  },
+  "ReinforcedCasing1": {
+   "label": "Reinforced Casing 1",
+   "branch": "Reinforced Casing",
+   "category": "survival",
+   "x": 2025,
+   "y": 100
+  },
+  "ReinforcedCasing3": {
+   "label": "Reinforced Casing 3",
+   "branch": "Reinforced Casing",
+   "category": "survival",
+   "x": 2025,
+   "y": 250
+  },
+  "ReinforcedCasing5": {
+   "label": "Reinforced Casing 5",
+   "branch": "Reinforced Casing",
+   "category": "survival",
+   "x": 2025,
+   "y": 400
+  },
+  "ReinforcedCasing7": {
+   "label": "Reinforced Casing 7",
+   "branch": "Reinforced Casing",
+   "category": "survival",
+   "x": 2025,
+   "y": 550
+  },
+  "ReinforcedCasing2": {
+   "label": "Reinforced Casing 2",
+   "branch": "Reinforced Casing",
+   "category": "survival",
+   "x": 2137,
+   "y": 175
+  },
+  "ReinforcedCasing4": {
+   "label": "Reinforced Casing 4",
+   "branch": "Reinforced Casing",
+   "category": "survival",
+   "x": 2137,
+   "y": 325
+  },
+  "ReinforcedCasing6": {
+   "label": "Reinforced Casing 6",
+   "branch": "Reinforced Casing",
+   "category": "survival",
+   "x": 2137,
+   "y": 475
+  },
+  "ReinforcedCasing8": {
+   "label": "Reinforced Casing 8",
+   "branch": "Reinforced Casing",
+   "category": "survival",
+   "x": 2137,
+   "y": 625
+  },
+  "ShockAbsorbance1": {
+   "label": "Overheat Damage 1",
+   "branch": "Overheat Damage",
+   "category": "survival",
+   "x": 2250,
+   "y": 100
+  },
+  "ShockAbsorbance3": {
+   "label": "Overheat Damage 3",
+   "branch": "Overheat Damage",
+   "category": "survival",
+   "x": 2250,
+   "y": 250
+  },
+  "ShockAbsorbance5": {
+   "label": "Overheat Damage 5",
+   "branch": "Overheat Damage",
+   "category": "survival",
+   "x": 2250,
+   "y": 400
+  },
+  "AMSOverload1": {
+   "label": "AMS Overload 1",
+   "branch": "AMS Overload",
+   "category": "survival",
+   "x": 2250,
+   "y": 550
+  },
+  "ShockAbsorbance2": {
+   "label": "Overheat Damage 2",
+   "branch": "Overheat Damage",
+   "category": "survival",
+   "x": 2362,
+   "y": 175
+  },
+  "ShockAbsorbance4": {
+   "label": "Overheat Damage 4",
+   "branch": "Overheat Damage",
+   "category": "survival",
+   "x": 2362,
+   "y": 325
+  },
+  "AMSOverload2": {
+   "label": "AMS Overload 2",
+   "branch": "AMS Overload",
+   "category": "survival",
+   "x": 2362,
+   "y": 625
+  },
+  "TorsoSpeed1": {
+   "label": "Torso Speed 1",
+   "branch": "Torso Speed",
+   "category": "mobility",
+   "x": 2700,
+   "y": 850
+  },
+  "TorsoSpeed3": {
+   "label": "Torso Speed 3",
+   "branch": "Torso Speed",
+   "category": "mobility",
+   "x": 2700,
+   "y": 1000
+  },
+  "TorsoSpeed5": {
+   "label": "Torso Speed 5",
+   "branch": "Torso Speed",
+   "category": "mobility",
+   "x": 2700,
+   "y": 1150
+  },
+  "SpeedTweak2": {
+   "label": "Speed Tweak 2",
+   "branch": "Speed Tweak",
+   "category": "mobility",
+   "x": 2737,
+   "y": 475
+  },
+  "SpeedTweak4": {
+   "label": "Speed Tweak 4",
+   "branch": "Speed Tweak",
+   "category": "mobility",
+   "x": 2737,
+   "y": 625
+  },
+  "TorsoSpeed2": {
+   "label": "Torso Speed 2",
+   "branch": "Torso Speed",
+   "category": "mobility",
+   "x": 2812,
+   "y": 925
+  },
+  "TorsoSpeed4": {
+   "label": "Torso Speed 4",
+   "branch": "Torso Speed",
+   "category": "mobility",
+   "x": 2812,
+   "y": 1075
+  },
+  "TorsoSpeed6": {
+   "label": "Torso Speed 6",
+   "branch": "Torso Speed",
+   "category": "mobility",
+   "x": 2812,
+   "y": 1225
+  },
+  "KineticBurst1": {
+   "label": "Kinetic Burst 1",
+   "branch": "Kinetic Burst",
+   "category": "mobility",
+   "x": 2850,
+   "y": 100
+  },
+  "KineticBurst3": {
+   "label": "Kinetic Burst 3",
+   "branch": "Kinetic Burst",
+   "category": "mobility",
+   "x": 2850,
+   "y": 250
+  },
+  "KineticBurst5": {
+   "label": "Kinetic Burst 5",
+   "branch": "Kinetic Burst",
+   "category": "mobility",
+   "x": 2850,
+   "y": 400
+  },
+  "KineticBurst7": {
+   "label": "Kinetic Burst 7",
+   "branch": "Kinetic Burst",
+   "category": "mobility",
+   "x": 2850,
+   "y": 550
+  },
+  "KineticBurst2": {
+   "label": "Kinetic Burst 2",
+   "branch": "Kinetic Burst",
+   "category": "mobility",
+   "x": 2962,
+   "y": 175
+  },
+  "KineticBurst4": {
+   "label": "Kinetic Burst 4",
+   "branch": "Kinetic Burst",
+   "category": "mobility",
+   "x": 2962,
+   "y": 325
+  },
+  "KineticBurst6": {
+   "label": "Kinetic Burst 6",
+   "branch": "Kinetic Burst",
+   "category": "mobility",
+   "x": 2962,
+   "y": 475
+  },
+  "SpeedTweak5": {
+   "label": "Speed Tweak 5",
+   "branch": "Speed Tweak",
+   "category": "mobility",
+   "x": 2962,
+   "y": 625
+  },
+  "SpeedTweak1": {
+   "label": "Speed Tweak 1",
+   "branch": "Speed Tweak",
+   "category": "mobility",
+   "x": 3075,
+   "y": 400
+  },
+  "SpeedTweak3": {
+   "label": "Speed Tweak 3",
+   "branch": "Speed Tweak",
+   "category": "mobility",
+   "x": 3075,
+   "y": 550
+  },
+  "HardBrake1": {
+   "label": "Hard Brake 1",
+   "branch": "Hard Brake",
+   "category": "mobility",
+   "x": 3225,
+   "y": 100
+  },
+  "HardBrake3": {
+   "label": "Hard Brake 3",
+   "branch": "Hard Brake",
+   "category": "mobility",
+   "x": 3225,
+   "y": 250
+  },
+  "HardBrake5": {
+   "label": "Hard Brake 5",
+   "branch": "Hard Brake",
+   "category": "mobility",
+   "x": 3225,
+   "y": 400
+  },
+  "HardBrake7": {
+   "label": "Hard Brake 7",
+   "branch": "Hard Brake",
+   "category": "mobility",
+   "x": 3225,
+   "y": 550
+  },
+  "TorsoYaw1": {
+   "label": "Torso Yaw 1",
+   "branch": "Torso Yaw",
+   "category": "mobility",
+   "x": 3225,
+   "y": 850
+  },
+  "TorsoYaw3": {
+   "label": "Torso Yaw 3",
+   "branch": "Torso Yaw",
+   "category": "mobility",
+   "x": 3225,
+   "y": 1000
+  },
+  "TorsoYaw5": {
+   "label": "Torso Yaw 5",
+   "branch": "Torso Yaw",
+   "category": "mobility",
+   "x": 3225,
+   "y": 1150
+  },
+  "HardBrake2": {
+   "label": "Hard Brake 2",
+   "branch": "Hard Brake",
+   "category": "mobility",
+   "x": 3337,
+   "y": 175
+  },
+  "HardBrake4": {
+   "label": "Hard Brake 4",
+   "branch": "Hard Brake",
+   "category": "mobility",
+   "x": 3337,
+   "y": 325
+  },
+  "HardBrake6": {
+   "label": "Hard Brake 6",
+   "branch": "Hard Brake",
+   "category": "mobility",
+   "x": 3337,
+   "y": 475
+  },
+  "TorsoYaw2": {
+   "label": "Torso Yaw 2",
+   "branch": "Torso Yaw",
+   "category": "mobility",
+   "x": 3337,
+   "y": 925
+  },
+  "TorsoYaw4": {
+   "label": "Torso Yaw 4",
+   "branch": "Torso Yaw",
+   "category": "mobility",
+   "x": 3337,
+   "y": 1075
+  },
+  "AnchorTurn1": {
+   "label": "Anchor Turn 1",
+   "branch": "Anchor Turn",
+   "category": "mobility",
+   "x": 3450,
+   "y": 100
+  },
+  "AnchorTurn3": {
+   "label": "Anchor Turn 3",
+   "branch": "Anchor Turn",
+   "category": "mobility",
+   "x": 3450,
+   "y": 250
+  },
+  "AnchorTurn5": {
+   "label": "Anchor Turn 5",
+   "branch": "Anchor Turn",
+   "category": "mobility",
+   "x": 3450,
+   "y": 400
+  },
+  "TorsoPitch1": {
+   "label": "Torso Pitch 1",
+   "branch": "Torso Pitch",
+   "category": "mobility",
+   "x": 3450,
+   "y": 850
+  },
+  "TorsoPitch3": {
+   "label": "Torso Pitch 3",
+   "branch": "Torso Pitch",
+   "category": "mobility",
+   "x": 3450,
+   "y": 1000
+  },
+  "TorsoPitch5": {
+   "label": "Torso Pitch 5",
+   "branch": "Torso Pitch",
+   "category": "mobility",
+   "x": 3450,
+   "y": 1150
+  },
+  "AnchorTurn2": {
+   "label": "Anchor Turn 2",
+   "branch": "Anchor Turn",
+   "category": "mobility",
+   "x": 3562,
+   "y": 175
+  },
+  "AnchorTurn4": {
+   "label": "Anchor Turn 4",
+   "branch": "Anchor Turn",
+   "category": "mobility",
+   "x": 3562,
+   "y": 325
+  },
+  "TorsoPitch2": {
+   "label": "Torso Pitch 2",
+   "branch": "Torso Pitch",
+   "category": "mobility",
+   "x": 3562,
+   "y": 925
+  },
+  "TorsoPitch4": {
+   "label": "Torso Pitch 4",
+   "branch": "Torso Pitch",
+   "category": "mobility",
+   "x": 3562,
+   "y": 1075
+  },
+  "LiftSpeed1": {
+   "label": "Lift Speed 1",
+   "branch": "Lift Speed",
+   "category": "jumpjets",
+   "x": 3900,
+   "y": 100
+  },
+  "LiftSpeed3": {
+   "label": "Lift Speed 3",
+   "branch": "Lift Speed",
+   "category": "jumpjets",
+   "x": 3900,
+   "y": 250
+  },
+  "LiftSpeed5": {
+   "label": "Lift Speed 5",
+   "branch": "Lift Speed",
+   "category": "jumpjets",
+   "x": 3900,
+   "y": 400
+  },
+  "VentCalibration1": {
+   "label": "Vent Calibration 1",
+   "branch": "Vent Calibration",
+   "category": "jumpjets",
+   "x": 3900,
+   "y": 700
+  },
+  "VentCalibration3": {
+   "label": "Vent Calibration 3",
+   "branch": "Vent Calibration",
+   "category": "jumpjets",
+   "x": 3900,
+   "y": 850
+  },
+  "VentCalibration5": {
+   "label": "Vent Calibration 5",
+   "branch": "Vent Calibration",
+   "category": "jumpjets",
+   "x": 3900,
+   "y": 1000
+  },
+  "LiftSpeed2": {
+   "label": "Lift Speed 2",
+   "branch": "Lift Speed",
+   "category": "jumpjets",
+   "x": 4012,
+   "y": 175
+  },
+  "LiftSpeed4": {
+   "label": "Lift Speed 4",
+   "branch": "Lift Speed",
+   "category": "jumpjets",
+   "x": 4012,
+   "y": 325
+  },
+  "VentCalibration2": {
+   "label": "Vent Calibration 2",
+   "branch": "Vent Calibration",
+   "category": "jumpjets",
+   "x": 4012,
+   "y": 775
+  },
+  "VentCalibration4": {
+   "label": "Vent Calibration 4",
+   "branch": "Vent Calibration",
+   "category": "jumpjets",
+   "x": 4012,
+   "y": 925
+  },
+  "Vectoring1": {
+   "label": "Shock Absorbance 1",
+   "branch": "Shock Absorbance",
+   "category": "jumpjets",
+   "x": 4125,
+   "y": 100
+  },
+  "Vectoring3": {
+   "label": "Shock Absorbance 3",
+   "branch": "Shock Absorbance",
+   "category": "jumpjets",
+   "x": 4125,
+   "y": 250
+  },
+  "Vectoring5": {
+   "label": "Shock Absorbance 5",
+   "branch": "Shock Absorbance",
+   "category": "jumpjets",
+   "x": 4125,
+   "y": 400
+  },
+  "HeatShielding1": {
+   "label": "Heat Shielding 1",
+   "branch": "Heat Shielding",
+   "category": "jumpjets",
+   "x": 4125,
+   "y": 700
+  },
+  "HeatShielding3": {
+   "label": "Heat Shielding 3",
+   "branch": "Heat Shielding",
+   "category": "jumpjets",
+   "x": 4125,
+   "y": 850
+  },
+  "HeatShielding5": {
+   "label": "Heat Shielding 5",
+   "branch": "Heat Shielding",
+   "category": "jumpjets",
+   "x": 4125,
+   "y": 1000
+  },
+  "Vectoring2": {
+   "label": "Shock Absorbance 2",
+   "branch": "Shock Absorbance",
+   "category": "jumpjets",
+   "x": 4237,
+   "y": 175
+  },
+  "Vectoring4": {
+   "label": "Shock Absorbance 4",
+   "branch": "Shock Absorbance",
+   "category": "jumpjets",
+   "x": 4237,
+   "y": 325
+  },
+  "HeatShielding2": {
+   "label": "Heat Shielding 2",
+   "branch": "Heat Shielding",
+   "category": "jumpjets",
+   "x": 4237,
+   "y": 775
+  },
+  "HeatShielding4": {
+   "label": "Heat Shielding 4",
+   "branch": "Heat Shielding",
+   "category": "jumpjets",
+   "x": 4237,
+   "y": 925
+  },
+  "QuickIgnition1": {
+   "label": "Quick Ignition 1",
+   "branch": "Quick Ignition",
+   "category": "operations",
+   "x": 4575,
+   "y": 100
+  },
+  "QuickIgnition3": {
+   "label": "Quick Ignition 3",
+   "branch": "Quick Ignition",
+   "category": "operations",
+   "x": 4575,
+   "y": 250
+  },
+  "QuickIgnition5": {
+   "label": "Quick Ignition 5",
+   "branch": "Quick Ignition",
+   "category": "operations",
+   "x": 4575,
+   "y": 400
+  },
+  "ImprovedGyros1": {
+   "label": "Improved Gyros 1",
+   "branch": "Improved Gyros",
+   "category": "operations",
+   "x": 4575,
+   "y": 700
+  },
+  "ImprovedGyros3": {
+   "label": "Improved Gyros 3",
+   "branch": "Improved Gyros",
+   "category": "operations",
+   "x": 4575,
+   "y": 850
+  },
+  "QuickIgnition2": {
+   "label": "Quick Ignition 2",
+   "branch": "Quick Ignition",
+   "category": "operations",
+   "x": 4687,
+   "y": 175
+  },
+  "QuickIgnition4": {
+   "label": "Quick Ignition 4",
+   "branch": "Quick Ignition",
+   "category": "operations",
+   "x": 4687,
+   "y": 325
+  },
+  "ImprovedGyros2": {
+   "label": "Improved Gyros 2",
+   "branch": "Improved Gyros",
+   "category": "operations",
+   "x": 4687,
+   "y": 775
+  },
+  "ImprovedGyros4": {
+   "label": "Improved Gyros 4",
+   "branch": "Improved Gyros",
+   "category": "operations",
+   "x": 4687,
+   "y": 925
+  },
+  "CoolRun1": {
+   "label": "Cool Run 1",
+   "branch": "Cool Run",
+   "category": "operations",
+   "x": 4800,
+   "y": 100
+  },
+  "CoolRun3": {
+   "label": "Cool Run 3",
+   "branch": "Cool Run",
+   "category": "operations",
+   "x": 4800,
+   "y": 250
+  },
+  "CoolRun5": {
+   "label": "Cool Run 5",
+   "branch": "Cool Run",
+   "category": "operations",
+   "x": 4800,
+   "y": 400
+  },
+  "SpeedRetention1": {
+   "label": "Speed Retention 1",
+   "branch": "Speed Retention",
+   "category": "operations",
+   "x": 4800,
+   "y": 700
+  },
+  "SpeedRetention3": {
+   "label": "Speed Retention 3",
+   "branch": "Speed Retention",
+   "category": "operations",
+   "x": 4800,
+   "y": 850
+  },
+  "CoolRun2": {
+   "label": "Cool Run 2",
+   "branch": "Cool Run",
+   "category": "operations",
+   "x": 4912,
+   "y": 175
+  },
+  "CoolRun4": {
+   "label": "Cool Run 4",
+   "branch": "Cool Run",
+   "category": "operations",
+   "x": 4912,
+   "y": 325
+  },
+  "SpeedRetention2": {
+   "label": "Speed Retention 2",
+   "branch": "Speed Retention",
+   "category": "operations",
+   "x": 4912,
+   "y": 775
+  },
+  "HeatContainment1": {
+   "label": "Heat Containment 1",
+   "branch": "Heat Containment",
+   "category": "operations",
+   "x": 5025,
+   "y": 100
+  },
+  "HeatContainment3": {
+   "label": "Heat Containment 3",
+   "branch": "Heat Containment",
+   "category": "operations",
+   "x": 5025,
+   "y": 250
+  },
+  "HeatContainment5": {
+   "label": "Heat Containment 5",
+   "branch": "Heat Containment",
+   "category": "operations",
+   "x": 5025,
+   "y": 400
+  },
+  "HillClimb1": {
+   "label": "Hill Climb 1",
+   "branch": "Hill Climb",
+   "category": "operations",
+   "x": 5025,
+   "y": 700
+  },
+  "HillClimb3": {
+   "label": "Hill Climb 3",
+   "branch": "Hill Climb",
+   "category": "operations",
+   "x": 5025,
+   "y": 850
+  },
+  "HeatContainment2": {
+   "label": "Heat Containment 2",
+   "branch": "Heat Containment",
+   "category": "operations",
+   "x": 5137,
+   "y": 175
+  },
+  "HeatContainment4": {
+   "label": "Heat Containment 4",
+   "branch": "Heat Containment",
+   "category": "operations",
+   "x": 5137,
+   "y": 325
+  },
+  "HillClimb2": {
+   "label": "Hill Climb 2",
+   "branch": "Hill Climb",
+   "category": "operations",
+   "x": 5137,
+   "y": 775
+  },
+  "SeismicSensor1": {
+   "label": "Seismic Sensor 1",
+   "branch": "Seismic Sensor",
+   "category": "sensors",
+   "x": 5512,
+   "y": 325
+  },
+  "TargetDecay2": {
+   "label": "Target Decay 2",
+   "branch": "Target Decay",
+   "category": "sensors",
+   "x": 5512,
+   "y": 775
+  },
+  "TargetDecay4": {
+   "label": "Target Decay 4",
+   "branch": "Target Decay",
+   "category": "sensors",
+   "x": 5512,
+   "y": 925
+  },
+  "TargetInfoGathering1": {
+   "label": "Target Info Gathering 1",
+   "branch": "Target Info Gathering",
+   "category": "sensors",
+   "x": 5625,
+   "y": 100
+  },
+  "TargetInfoGathering3": {
+   "label": "Target Info Gathering 3",
+   "branch": "Target Info Gathering",
+   "category": "sensors",
+   "x": 5625,
+   "y": 250
+  },
+  "TargetInfoGathering5": {
+   "label": "Target Info Gathering 5",
+   "branch": "Target Info Gathering",
+   "category": "sensors",
+   "x": 5625,
+   "y": 400
+  },
+  "TargetDecay1": {
+   "label": "Target Decay 1",
+   "branch": "Target Decay",
+   "category": "sensors",
+   "x": 5625,
+   "y": 700
+  },
+  "TargetDecay3": {
+   "label": "Target Decay 3",
+   "branch": "Target Decay",
+   "category": "sensors",
+   "x": 5625,
+   "y": 850
+  },
+  "TargetDecay5": {
+   "label": "Target Decay 5",
+   "branch": "Target Decay",
+   "category": "sensors",
+   "x": 5625,
+   "y": 1000
+  },
+  "TargetInfoGathering2": {
+   "label": "Target Info Gathering 2",
+   "branch": "Target Info Gathering",
+   "category": "sensors",
+   "x": 5737,
+   "y": 175
+  },
+  "TargetInfoGathering4": {
+   "label": "Target Info Gathering 4",
+   "branch": "Target Info Gathering",
+   "category": "sensors",
+   "x": 5737,
+   "y": 325
+  },
+  "SeismicSensor2": {
+   "label": "Seismic Sensor 2",
+   "branch": "Seismic Sensor",
+   "category": "sensors",
+   "x": 5737,
+   "y": 475
+  },
+  "TargetRetention2": {
+   "label": "Target Retention 2",
+   "branch": "Target Retention",
+   "category": "sensors",
+   "x": 5812,
+   "y": 775
+  },
+  "TargetRetention1": {
+   "label": "Target Retention 1",
+   "branch": "Target Retention",
+   "category": "sensors",
+   "x": 5925,
+   "y": 700
+  },
+  "RadarDeprivation1": {
+   "label": "Radar Deprivation 1",
+   "branch": "Radar Deprivation",
+   "category": "sensors",
+   "x": 5962,
+   "y": 175
+  },
+  "RadarDeprivation2": {
+   "label": "Radar Deprivation 2",
+   "branch": "Radar Deprivation",
+   "category": "sensors",
+   "x": 5962,
+   "y": 325
+  },
+  "RadarDeprivation4": {
+   "label": "Radar Deprivation 4",
+   "branch": "Radar Deprivation",
+   "category": "sensors",
+   "x": 5962,
+   "y": 475
+  },
+  "SensorRange1": {
+   "label": "Sensor Range 1",
+   "branch": "Sensor Range",
+   "category": "sensors",
+   "x": 6037,
+   "y": 100
+  },
+  "SensorRange3": {
+   "label": "Sensor Range 3",
+   "branch": "Sensor Range",
+   "category": "sensors",
+   "x": 6037,
+   "y": 250
+  },
+  "SensorRange5": {
+   "label": "Sensor Range 5",
+   "branch": "Sensor Range",
+   "category": "sensors",
+   "x": 6037,
+   "y": 400
+  },
+  "EnhancedECM2": {
+   "label": "Enhanced ECM Systems 2",
+   "branch": "Enhanced ECM Systems",
+   "category": "sensors",
+   "x": 6037,
+   "y": 550
+  },
+  "SensorRange2": {
+   "label": "Sensor Range 2",
+   "branch": "Sensor Range",
+   "category": "sensors",
+   "x": 6112,
+   "y": 175
+  },
+  "SensorRange4": {
+   "label": "Sensor Range 4",
+   "branch": "Sensor Range",
+   "category": "sensors",
+   "x": 6112,
+   "y": 325
+  },
+  "RadarDeprivation5": {
+   "label": "Radar Deprivation 5",
+   "branch": "Radar Deprivation",
+   "category": "sensors",
+   "x": 6112,
+   "y": 475
+  },
+  "EnhancedECM1": {
+   "label": "Enhanced ECM Systems 1",
+   "branch": "Enhanced ECM Systems",
+   "category": "sensors",
+   "x": 6187,
+   "y": 250
+  },
+  "RadarDeprivation3": {
+   "label": "Radar Deprivation 3",
+   "branch": "Radar Deprivation",
+   "category": "sensors",
+   "x": 6187,
+   "y": 400
+  },
+  "AdvancedZoom": {
+   "label": "Advanced Zoom",
+   "branch": "Advanced Zoom",
+   "category": "sensors",
+   "x": 6187,
+   "y": 700
+  },
+  "CaptureAssist1": {
+   "label": "Capture Assist 1",
+   "branch": "Capture Assist",
+   "category": "auxiliary",
+   "x": 6600,
+   "y": 700
+  },
+  "CaptureAssist3": {
+   "label": "Capture Assist 3",
+   "branch": "Capture Assist",
+   "category": "auxiliary",
+   "x": 6600,
+   "y": 850
+  },
+  "CaptureAssist2": {
+   "label": "Capture Assist 2",
+   "branch": "Capture Assist",
+   "category": "auxiliary",
+   "x": 6712,
+   "y": 775
+  },
+  "CaptureAssist4": {
+   "label": "Capture Assist 4",
+   "branch": "Capture Assist",
+   "category": "auxiliary",
+   "x": 6712,
+   "y": 925
+  },
+  "ExtraUAV": {
+   "label": "Extra UAV",
+   "branch": "Extra UAV",
+   "category": "auxiliary",
+   "x": 6787,
+   "y": 175
+  },
+  "ConsumableSlot2": {
+   "label": "Consumable Slot 2",
+   "branch": "Consumable Slot",
+   "category": "auxiliary",
+   "x": 6787,
+   "y": 325
+  },
+  "UAVRange1": {
+   "label": "UAV Range 1",
+   "branch": "UAV Range",
+   "category": "auxiliary",
+   "x": 6862,
+   "y": 250
+  },
+  "UAVRange2": {
+   "label": "UAV Range 2",
+   "branch": "UAV Range",
+   "category": "auxiliary",
+   "x": 6862,
+   "y": 400
+  },
+  "UAVTime": {
+   "label": "UAV Duration",
+   "branch": "UAV Duration",
+   "category": "auxiliary",
+   "x": 6937,
+   "y": 175
+  },
+  "CoolshotCooldown": {
+   "label": "Coolshot Cooldown",
+   "branch": "Coolshot Cooldown",
+   "category": "auxiliary",
+   "x": 6937,
+   "y": 475
+  },
+  "ConsumableSlot1": {
+   "label": "Consumable Slot 1",
+   "branch": "Consumable Slot",
+   "category": "auxiliary",
+   "x": 7012,
+   "y": 100
+  },
+  "EnhancedCoolshot1": {
+   "label": "Enhanced Coolshot 1",
+   "branch": "Enhanced Coolshot",
+   "category": "auxiliary",
+   "x": 7012,
+   "y": 250
+  },
+  "EnhancedCoolshot2": {
+   "label": "Enhanced Coolshot 2",
+   "branch": "Enhanced Coolshot",
+   "category": "auxiliary",
+   "x": 7012,
+   "y": 400
+  },
+  "ConsumableSlot4": {
+   "label": "Consumable Slot 4",
+   "branch": "Consumable Slot",
+   "category": "auxiliary",
+   "x": 7012,
+   "y": 550
+  },
+  "ExtendedBombardment1": {
+   "label": "Adv. Salvos 1",
+   "branch": "Adv. Salvos",
+   "category": "auxiliary",
+   "x": 7087,
+   "y": 175
+  },
+  "CoolantReserves": {
+   "label": "Coolant Reserves",
+   "branch": "Coolant Reserves",
+   "category": "auxiliary",
+   "x": 7087,
+   "y": 475
+  },
+  "ExtendedBombardment2": {
+   "label": "Adv. Salvos 2",
+   "branch": "Adv. Salvos",
+   "category": "auxiliary",
+   "x": 7162,
+   "y": 250
+  },
+  "EnhancedSpotting": {
+   "label": "Enhanced Spotting",
+   "branch": "Enhanced Spotting",
+   "category": "auxiliary",
+   "x": 7162,
+   "y": 400
+  },
+  "ExpandedReserves": {
+   "label": "Expanded Reserves",
+   "branch": "Expanded Reserves",
+   "category": "auxiliary",
+   "x": 7237,
+   "y": 175
+  },
+  "ConsumableSlot3": {
+   "label": "Consumable Slot 3",
+   "branch": "Consumable Slot",
+   "category": "auxiliary",
+   "x": 7237,
+   "y": 325
+  },
+  "EnhancedNARC1": {
+   "label": "Enhanced Narc 1",
+   "branch": "Enhanced Narc",
+   "category": "auxiliary",
+   "x": 7275,
+   "y": 700
+  },
+  "EnhancedNARC2": {
+   "label": "Enhanced Narc 2",
+   "branch": "Enhanced Narc",
+   "category": "auxiliary",
+   "x": 7387,
+   "y": 775
+  }
+ },
+ "edges": [
+  [
+   "Cooldown1",
+   "Cooldown2"
+  ],
+  [
+   "Cooldown2",
+   "Cooldown3"
+  ],
+  [
+   "Cooldown3",
+   "Cooldown4"
+  ],
+  [
+   "Cooldown4",
+   "Cooldown5"
+  ],
+  [
+   "Cooldown5",
+   "Cooldown6"
+  ],
+  [
+   "Cooldown6",
+   "Cooldown7"
+  ],
+  [
+   "Cooldown7",
+   "Cooldown8"
+  ],
+  [
+   "Cooldown8",
+   "Cooldown9"
+  ],
+  [
+   "Cooldown9",
+   "Cooldown10"
+  ],
+  [
+   "Cooldown10",
+   "Cooldown11"
+  ],
+  [
+   "Cooldown11",
+   "Cooldown12"
+  ],
+  [
+   "Cooldown12",
+   "Cooldown13"
+  ],
+  [
+   "Cooldown13",
+   "Cooldown14"
+  ],
+  [
+   "Cooldown14",
+   "Cooldown15"
+  ],
+  [
+   "Cooldown15",
+   "Cooldown16"
+  ],
+  [
+   "Range1",
+   "Range2"
+  ],
+  [
+   "Range2",
+   "Range3"
+  ],
+  [
+   "Range3",
+   "Range4"
+  ],
+  [
+   "Range4",
+   "Range5"
+  ],
+  [
+   "Range5",
+   "Range6"
+  ],
+  [
+   "Range6",
+   "Range7"
+  ],
+  [
+   "Range7",
+   "Range8"
+  ],
+  [
+   "Range8",
+   "Range9"
+  ],
+  [
+   "Range9",
+   "Range10"
+  ],
+  [
+   "Range10",
+   "Range11"
+  ],
+  [
+   "Range11",
+   "Range12"
+  ],
+  [
+   "Range12",
+   "Range13"
+  ],
+  [
+   "Range13",
+   "Range14"
+  ],
+  [
+   "Range14",
+   "Range15"
+  ],
+  [
+   "HeatGen1",
+   "HeatGen2"
+  ],
+  [
+   "HeatGen2",
+   "HeatGen3"
+  ],
+  [
+   "HeatGen3",
+   "HeatGen4"
+  ],
+  [
+   "HeatGen4",
+   "HeatGen5"
+  ],
+  [
+   "HeatGen5",
+   "HeatGen6"
+  ],
+  [
+   "HeatGen6",
+   "HeatGen7"
+  ],
+  [
+   "HeatGen7",
+   "HeatGen8"
+  ],
+  [
+   "HeatGen8",
+   "HeatGen9"
+  ],
+  [
+   "HeatGen9",
+   "HeatGen10"
+  ],
+  [
+   "HeatGen10",
+   "HeatGen11"
+  ],
+  [
+   "HeatGen11",
+   "HeatGen12"
+  ],
+  [
+   "HeatGen12",
+   "HeatGen13"
+  ],
+  [
+   "HeatGen13",
+   "HeatGen14"
+  ],
+  [
+   "Velocity1",
+   "Velocity2"
+  ],
+  [
+   "Velocity2",
+   "Velocity3"
+  ],
+  [
+   "Velocity3",
+   "Velocity4"
+  ],
+  [
+   "Velocity4",
+   "Velocity5"
+  ],
+  [
+   "MagazineCapacity1",
+   "MagazineCapacity2"
+  ],
+  [
+   "GaussCharge1",
+   "GaussCharge2"
+  ],
+  [
+   "SkeletalDensity1",
+   "SkeletalDensity2"
+  ],
+  [
+   "SkeletalDensity2",
+   "SkeletalDensity3"
+  ],
+  [
+   "SkeletalDensity3",
+   "SkeletalDensity4"
+  ],
+  [
+   "SkeletalDensity4",
+   "SkeletalDensity5"
+  ],
+  [
+   "SkeletalDensity5",
+   "SkeletalDensity6"
+  ],
+  [
+   "SkeletalDensity6",
+   "SkeletalDensity7"
+  ],
+  [
+   "SkeletalDensity7",
+   "SkeletalDensity8"
+  ],
+  [
+   "SkeletalDensity8",
+   "SkeletalDensity9"
+  ],
+  [
+   "SkeletalDensity9",
+   "SkeletalDensity10"
+  ],
+  [
+   "ArmorHardening1",
+   "ArmorHardening2"
+  ],
+  [
+   "ArmorHardening2",
+   "ArmorHardening3"
+  ],
+  [
+   "ArmorHardening3",
+   "ArmorHardening4"
+  ],
+  [
+   "ArmorHardening4",
+   "ArmorHardening5"
+  ],
+  [
+   "ArmorHardening5",
+   "ArmorHardening6"
+  ],
+  [
+   "ArmorHardening6",
+   "ArmorHardening7"
+  ],
+  [
+   "ArmorHardening7",
+   "ArmorHardening8"
+  ],
+  [
+   "ArmorHardening8",
+   "ArmorHardening9"
+  ],
+  [
+   "ArmorHardening9",
+   "ArmorHardening10"
+  ],
+  [
+   "ReinforcedCasing1",
+   "ReinforcedCasing2"
+  ],
+  [
+   "ReinforcedCasing2",
+   "ReinforcedCasing3"
+  ],
+  [
+   "ReinforcedCasing3",
+   "ReinforcedCasing4"
+  ],
+  [
+   "ReinforcedCasing4",
+   "ReinforcedCasing5"
+  ],
+  [
+   "ReinforcedCasing5",
+   "ReinforcedCasing6"
+  ],
+  [
+   "ReinforcedCasing6",
+   "ReinforcedCasing7"
+  ],
+  [
+   "ReinforcedCasing7",
+   "ReinforcedCasing8"
+  ],
+  [
+   "ShockAbsorbance1",
+   "ShockAbsorbance2"
+  ],
+  [
+   "ShockAbsorbance2",
+   "ShockAbsorbance3"
+  ],
+  [
+   "ShockAbsorbance3",
+   "ShockAbsorbance4"
+  ],
+  [
+   "ShockAbsorbance4",
+   "ShockAbsorbance5"
+  ],
+  [
+   "AMSOverload1",
+   "AMSOverload2"
+  ],
+  [
+   "KineticBurst1",
+   "KineticBurst2"
+  ],
+  [
+   "KineticBurst2",
+   "KineticBurst3"
+  ],
+  [
+   "KineticBurst3",
+   "KineticBurst4"
+  ],
+  [
+   "KineticBurst4",
+   "SpeedTweak1"
+  ],
+  [
+   "KineticBurst4",
+   "KineticBurst5"
+  ],
+  [
+   "KineticBurst5",
+   "SpeedTweak2"
+  ],
+  [
+   "KineticBurst5",
+   "KineticBurst6"
+  ],
+  [
+   "KineticBurst6",
+   "KineticBurst7"
+  ],
+  [
+   "KineticBurst6",
+   "SpeedTweak3"
+  ],
+  [
+   "KineticBurst7",
+   "SpeedTweak4"
+  ],
+  [
+   "KineticBurst7",
+   "SpeedTweak5"
+  ],
+  [
+   "HardBrake1",
+   "HardBrake2"
+  ],
+  [
+   "HardBrake2",
+   "HardBrake3"
+  ],
+  [
+   "HardBrake3",
+   "HardBrake4"
+  ],
+  [
+   "HardBrake4",
+   "HardBrake5"
+  ],
+  [
+   "HardBrake5",
+   "HardBrake6"
+  ],
+  [
+   "HardBrake6",
+   "HardBrake7"
+  ],
+  [
+   "AnchorTurn1",
+   "AnchorTurn2"
+  ],
+  [
+   "AnchorTurn2",
+   "AnchorTurn3"
+  ],
+  [
+   "AnchorTurn3",
+   "AnchorTurn4"
+  ],
+  [
+   "AnchorTurn4",
+   "AnchorTurn5"
+  ],
+  [
+   "TorsoSpeed1",
+   "TorsoSpeed2"
+  ],
+  [
+   "TorsoSpeed2",
+   "TorsoSpeed3"
+  ],
+  [
+   "TorsoSpeed3",
+   "TorsoSpeed4"
+  ],
+  [
+   "TorsoSpeed4",
+   "TorsoSpeed5"
+  ],
+  [
+   "TorsoSpeed5",
+   "TorsoSpeed6"
+  ],
+  [
+   "TorsoYaw1",
+   "TorsoYaw2"
+  ],
+  [
+   "TorsoYaw2",
+   "TorsoYaw3"
+  ],
+  [
+   "TorsoYaw3",
+   "TorsoYaw4"
+  ],
+  [
+   "TorsoYaw4",
+   "TorsoYaw5"
+  ],
+  [
+   "TorsoPitch1",
+   "TorsoPitch2"
+  ],
+  [
+   "TorsoPitch2",
+   "TorsoPitch3"
+  ],
+  [
+   "TorsoPitch3",
+   "TorsoPitch4"
+  ],
+  [
+   "TorsoPitch4",
+   "TorsoPitch5"
+  ],
+  [
+   "LiftSpeed1",
+   "LiftSpeed2"
+  ],
+  [
+   "LiftSpeed2",
+   "LiftSpeed3"
+  ],
+  [
+   "LiftSpeed3",
+   "LiftSpeed4"
+  ],
+  [
+   "LiftSpeed4",
+   "LiftSpeed5"
+  ],
+  [
+   "Vectoring1",
+   "Vectoring2"
+  ],
+  [
+   "Vectoring2",
+   "Vectoring3"
+  ],
+  [
+   "Vectoring3",
+   "Vectoring4"
+  ],
+  [
+   "Vectoring4",
+   "Vectoring5"
+  ],
+  [
+   "VentCalibration1",
+   "VentCalibration2"
+  ],
+  [
+   "VentCalibration2",
+   "VentCalibration3"
+  ],
+  [
+   "VentCalibration3",
+   "VentCalibration4"
+  ],
+  [
+   "VentCalibration4",
+   "VentCalibration5"
+  ],
+  [
+   "HeatShielding1",
+   "HeatShielding2"
+  ],
+  [
+   "HeatShielding2",
+   "HeatShielding3"
+  ],
+  [
+   "HeatShielding3",
+   "HeatShielding4"
+  ],
+  [
+   "HeatShielding4",
+   "HeatShielding5"
+  ],
+  [
+   "QuickIgnition1",
+   "QuickIgnition2"
+  ],
+  [
+   "QuickIgnition2",
+   "QuickIgnition3"
+  ],
+  [
+   "QuickIgnition3",
+   "QuickIgnition4"
+  ],
+  [
+   "QuickIgnition4",
+   "QuickIgnition5"
+  ],
+  [
+   "CoolRun1",
+   "CoolRun2"
+  ],
+  [
+   "CoolRun2",
+   "CoolRun3"
+  ],
+  [
+   "CoolRun3",
+   "CoolRun4"
+  ],
+  [
+   "CoolRun4",
+   "CoolRun5"
+  ],
+  [
+   "HeatContainment1",
+   "HeatContainment2"
+  ],
+  [
+   "HeatContainment2",
+   "HeatContainment3"
+  ],
+  [
+   "HeatContainment3",
+   "HeatContainment4"
+  ],
+  [
+   "HeatContainment4",
+   "HeatContainment5"
+  ],
+  [
+   "ImprovedGyros1",
+   "ImprovedGyros2"
+  ],
+  [
+   "ImprovedGyros2",
+   "ImprovedGyros3"
+  ],
+  [
+   "ImprovedGyros3",
+   "ImprovedGyros4"
+  ],
+  [
+   "SpeedRetention1",
+   "SpeedRetention2"
+  ],
+  [
+   "SpeedRetention2",
+   "SpeedRetention3"
+  ],
+  [
+   "HillClimb1",
+   "HillClimb2"
+  ],
+  [
+   "HillClimb2",
+   "HillClimb3"
+  ],
+  [
+   "TargetInfoGathering1",
+   "TargetInfoGathering2"
+  ],
+  [
+   "TargetInfoGathering2",
+   "TargetInfoGathering3"
+  ],
+  [
+   "TargetInfoGathering3",
+   "TargetInfoGathering4"
+  ],
+  [
+   "TargetInfoGathering3",
+   "SeismicSensor1"
+  ],
+  [
+   "TargetInfoGathering4",
+   "TargetInfoGathering5"
+  ],
+  [
+   "TargetInfoGathering5",
+   "SeismicSensor2"
+  ],
+  [
+   "SensorRange1",
+   "RadarDeprivation1"
+  ],
+  [
+   "SensorRange1",
+   "SensorRange2"
+  ],
+  [
+   "SensorRange2",
+   "SensorRange3"
+  ],
+  [
+   "SensorRange2",
+   "EnhancedECM1"
+  ],
+  [
+   "SensorRange3",
+   "RadarDeprivation2"
+  ],
+  [
+   "SensorRange3",
+   "SensorRange4"
+  ],
+  [
+   "SensorRange4",
+   "SensorRange5"
+  ],
+  [
+   "SensorRange4",
+   "RadarDeprivation3"
+  ],
+  [
+   "SensorRange5",
+   "RadarDeprivation4"
+  ],
+  [
+   "SensorRange5",
+   "EnhancedECM2"
+  ],
+  [
+   "SensorRange5",
+   "RadarDeprivation5"
+  ],
+  [
+   "TargetDecay1",
+   "TargetDecay2"
+  ],
+  [
+   "TargetDecay2",
+   "TargetDecay3"
+  ],
+  [
+   "TargetDecay3",
+   "TargetDecay4"
+  ],
+  [
+   "TargetDecay4",
+   "TargetDecay5"
+  ],
+  [
+   "TargetRetention1",
+   "TargetRetention2"
+  ],
+  [
+   "ConsumableSlot1",
+   "EnhancedCoolshot1"
+  ],
+  [
+   "ConsumableSlot1",
+   "UAVTime"
+  ],
+  [
+   "ConsumableSlot1",
+   "ExtendedBombardment1"
+  ],
+  [
+   "UAVTime",
+   "UAVRange1"
+  ],
+  [
+   "ExtendedBombardment1",
+   "ExtendedBombardment2"
+  ],
+  [
+   "EnhancedCoolshot1",
+   "EnhancedCoolshot2"
+  ],
+  [
+   "UAVRange1",
+   "ExtraUAV"
+  ],
+  [
+   "UAVRange1",
+   "ConsumableSlot2"
+  ],
+  [
+   "UAVRange1",
+   "UAVRange2"
+  ],
+  [
+   "ExtendedBombardment2",
+   "ExpandedReserves"
+  ],
+  [
+   "ExtendedBombardment2",
+   "ConsumableSlot3"
+  ],
+  [
+   "ExtendedBombardment2",
+   "EnhancedSpotting"
+  ],
+  [
+   "EnhancedCoolshot2",
+   "CoolshotCooldown"
+  ],
+  [
+   "EnhancedCoolshot2",
+   "ConsumableSlot4"
+  ],
+  [
+   "EnhancedCoolshot2",
+   "CoolantReserves"
+  ],
+  [
+   "CaptureAssist1",
+   "CaptureAssist2"
+  ],
+  [
+   "CaptureAssist2",
+   "CaptureAssist3"
+  ],
+  [
+   "CaptureAssist3",
+   "CaptureAssist4"
+  ],
+  [
+   "EnhancedNARC1",
+   "EnhancedNARC2"
+  ],
+  [
+   "LaserDuration1",
+   "LaserDuration2"
+  ],
+  [
+   "LaserDuration2",
+   "LaserDuration3"
+  ],
+  [
+   "LaserDuration3",
+   "LaserDuration4"
+  ],
+  [
+   "LBXSpread1",
+   "LBXSpread2"
+  ],
+  [
+   "UACJamChance1",
+   "UACJamChance2"
+  ],
+  [
+   "FlamerVentilation1",
+   "FlamerVentilation2"
+  ],
+  [
+   "MissileRack1",
+   "MissileRack2"
+  ],
+  [
+   "MissileSpread1",
+   "MissileSpread2"
+  ],
+  [
+   "HighExplosive1",
+   "HighExplosive2"
+  ]
+ ]
+}

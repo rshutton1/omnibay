@@ -27,6 +27,7 @@ RUNTIME_DATA_FILES = (
     "loadouts.json",
     "omnipods.json",
     "skills.json",
+    "skill-graph.json",
 )
 
 def engine_modules(engine_source: str) -> list:
