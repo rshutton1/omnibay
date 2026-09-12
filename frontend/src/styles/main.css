@@ -22,20 +22,26 @@
   --warn: #e0a33e;
   --danger: #ef5f5f;
 
-  /* Hardpoint and equipment classes. Also used for the slot grid. */
-  --c-energy: #5ec8f2;
-  --c-ballistic: #e8a33d;
-  --c-missile: #7fd18b;
-  --c-ams: #b493e6;
-  --c-ecm: #f2789a;
-  --c-ammo: #c98fd6;
-  --c-heatsink: #57a8b8;
-  --c-engine: #d4744f;
-  --c-jumpjet: #93b7e0;
-  --c-masc: #e0b45f;
-  --c-equipment: #8fa0b5;
-  --c-internal: #4a5464;
-  --c-upgrade: #59657a;
+  /* Hardpoint and equipment classes, matching MechDB's mechlab so a build
+     reads the same here as it does there. Each class has a text/accent tone
+     and a solid fill for slot blocks; MechDB tones energy down for fills
+     because the pure yellow is too hot to sit text on, and ammo takes a
+     darker shade of the weapon class that fires it. */
+  --c-energy: #fcef39;
+  --c-energy-fill: #9b9326;
+  --c-ballistic: #914fbf;
+  --c-missile: #4c818a;
+  --c-ams: #2fac4a;
+  --c-ecm: #de8020;
+  --c-ammo-ballistic: #5b3377;
+  --c-ammo-missile: #325157;
+  --c-ammo-ams: #206b30;
+  --c-equipment: #63a3d1;
+  --c-equipment-fill: #3f6681;
+  --c-internal: #4e4e4e;
+  --c-omnipod: #c9cac2;
+  --c-slot-text: #e2e2e2;
+  --c-slot-text-dark: #0a0a0a;
 
   --cell: 17px;
   --radius: 3px;
@@ -218,6 +224,28 @@ main {
 .hp-missile { color: var(--c-missile); }
 .hp-ams { color: var(--c-ams); }
 .hp-ecm { color: var(--c-ecm); }
+
+/* Item categories as the engine reports them (item_category). --tone is for
+   text, spines and headers; --fill is the solid block colour in the slot grid.
+   Engines, heat sinks, jump jets, MASC and misc equipment all share one blue,
+   as on MechDB. */
+.cat-weapon-energy { --tone: var(--c-energy); --fill: var(--c-energy-fill); }
+.cat-weapon-ballistic { --tone: var(--c-ballistic); --fill: var(--c-ballistic); }
+.cat-weapon-missile { --tone: var(--c-missile); --fill: var(--c-missile); }
+.cat-weapon-ams { --tone: var(--c-ams); --fill: var(--c-ams); }
+.cat-weapon-other { --tone: var(--c-equipment); --fill: var(--c-equipment-fill); }
+.cat-ammo-ballistic { --tone: var(--c-ballistic); --fill: var(--c-ammo-ballistic); }
+.cat-ammo-missile { --tone: var(--c-missile); --fill: var(--c-ammo-missile); }
+.cat-ammo-ams { --tone: var(--c-ams); --fill: var(--c-ammo-ams); }
+.cat-ammo-other { --tone: var(--c-equipment); --fill: var(--c-equipment-fill); }
+.cat-ecm { --tone: var(--c-ecm); --fill: var(--c-ecm); }
+.cat-heatsink,
+.cat-engine,
+.cat-jumpjet,
+.cat-masc,
+.cat-equipment { --tone: var(--c-equipment); --fill: var(--c-equipment-fill); }
+.cat-internal,
+.cat-upgrade { --tone: var(--c-internal); --fill: var(--c-internal); }
 
 table {
   border-collapse: collapse;

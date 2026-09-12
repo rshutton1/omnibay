@@ -437,7 +437,8 @@ header {
   gap: 5px;
   padding: 0 4px 0 0;
   border-radius: 2px;
-  background: var(--bg-cell);
+  /* Solid fills, as MechDB draws them: the colour is the block, not a hint. */
+  background: var(--fill, var(--bg-cell));
   overflow: hidden;
   font-size: 10.5px;
   min-width: 0;
@@ -446,7 +447,7 @@ header {
   width: 3px;
   align-self: stretch;
   flex: none;
-  background: var(--tone, var(--c-equipment));
+  background: rgba(0, 0, 0, 0.35);
 }
 .text {
   flex: 1;
@@ -462,10 +463,15 @@ header {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--tone, var(--text));
+  color: var(--c-slot-text);
 }
 .detail {
   font-size: 8.5px;
+  color: rgba(226, 226, 226, 0.65);
+}
+.cat-internal .detail,
+.cat-upgrade .detail {
+  color: rgba(10, 10, 10, 0.6);
 }
 .strip {
   opacity: 0;
@@ -474,7 +480,7 @@ header {
   line-height: 1;
   background: none;
   border: none;
-  color: var(--text-dim);
+  color: var(--c-slot-text);
   flex: none;
 }
 .block:hover .strip {
@@ -494,27 +500,14 @@ header {
   );
 }
 
-/* Category tones drive both the spine and the label colour. */
-.cat-weapon-energy { --tone: var(--c-energy); }
-.cat-weapon-ballistic { --tone: var(--c-ballistic); }
-.cat-weapon-missile { --tone: var(--c-missile); }
-.cat-weapon-ams { --tone: var(--c-ams); }
-.cat-ammo { --tone: var(--c-ammo); }
-.cat-heatsink { --tone: var(--c-heatsink); }
-.cat-engine { --tone: var(--c-engine); }
-.cat-jumpjet { --tone: var(--c-jumpjet); }
-.cat-masc { --tone: var(--c-masc); }
-.cat-equipment { --tone: var(--c-equipment); }
-.cat-internal { --tone: var(--c-internal); }
-.cat-upgrade { --tone: var(--c-upgrade); }
 
-.cat-internal,
-.cat-upgrade {
-  background: #151a21;
-}
 .cat-internal .label,
 .cat-upgrade .label {
-  color: var(--text-faint);
+  color: var(--c-slot-text-dark);
+}
+.cat-internal .spine,
+.cat-upgrade .spine {
+  background: rgba(0, 0, 0, 0.2);
 }
 
 /* ---- quirks ---- */

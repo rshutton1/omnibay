@@ -56,14 +56,4 @@ const { drag } = useEquipmentDrag()
   font-size: 9px;
 }
 
-.cat-weapon-energy { --tone: var(--c-energy); }
-.cat-weapon-ballistic { --tone: var(--c-ballistic); }
-.cat-weapon-missile { --tone: var(--c-missile); }
-.cat-weapon-ams { --tone: var(--c-ams); }
-.cat-ammo { --tone: var(--c-ammo); }
-.cat-heatsink { --tone: var(--c-heatsink); }
-.cat-engine { --tone: var(--c-engine); }
-.cat-jumpjet { --tone: var(--c-jumpjet); }
-.cat-masc { --tone: var(--c-masc); }
-.cat-equipment { --tone: var(--c-equipment); }
 </style>

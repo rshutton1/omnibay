@@ -15,7 +15,7 @@ from typing import Any, Callable, Dict, List, Optional
 from omnibay import build as B
 from omnibay import codec
 from omnibay import items as I
-from omnibay.calculate import calculate_build
+from omnibay.calculate import calculate_build, item_category
 from omnibay.skills import (
     MAX_SKILL_POINTS,
     normalize_selection,
@@ -242,6 +242,7 @@ def equipment_catalogue(data: GameData) -> List[Dict[str, Any]]:
             "tons": I.item_tons(item),
             "heat": I.item_heat(item),
             "hardpoint_type": I.equipment_hardpoint_type(item),
+            "category": item_category(item),
             "stats": item.get("stats") or {},
         }
         for item in data.items.values()

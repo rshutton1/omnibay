@@ -505,11 +505,13 @@ def item_category(item: Dict[str, Any]) -> str:
     if I.is_heat_sink(item):
         return "heatsink"
     if I.is_ammo(item):
-        return "ammo"
+        return "ammo-{0}".format(I.ammo_class(item) or "other")
     if I.is_jump_jet(item):
         return "jumpjet"
     if I.is_weapon(item):
         return "weapon-{0}".format(I.equipment_hardpoint_type(item) or "other")
+    if I.is_ecm(item):
+        return "ecm"
     if item.get("item_type") == "internal":
         return "internal"
     if item.get("item_type") == "masc":

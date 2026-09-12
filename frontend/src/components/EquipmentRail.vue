@@ -103,9 +103,7 @@ function onRowPointerDown(event: PointerEvent, item: EquipmentItem) {
     {
       itemId: item.id,
       label: item.display_name,
-      category: item.item_type === 'weapon' && item.hardpoint_type
-        ? `weapon-${item.hardpoint_type}`
-        : item.item_type,
+      category: item.category,
       slots: item.slots,
       tons: item.tons,
       origin: null,
@@ -116,12 +114,7 @@ function onRowPointerDown(event: PointerEvent, item: EquipmentItem) {
 
 /** Colour the row by what kind of thing it is, matching the slot grid. */
 function toneFor(item: EquipmentItem): string {
-  if (item.item_type === 'ammo') return 'cat-ammo'
-  if (item.item_type === 'engine') return 'cat-engine'
-  if (item.item_type === 'jumpjet') return 'cat-jumpjet'
-  if (item.item_type === 'masc') return 'cat-masc'
-  if (item.hardpoint_type) return `cat-weapon-${item.hardpoint_type}`
-  return 'cat-equipment'
+  return `cat-${item.category}`
 }
 </script>
 
@@ -320,15 +313,6 @@ function toneFor(item: EquipmentItem): string {
   font-size: 11px;
 }
 
-.cat-weapon-energy { --tone: var(--c-energy); }
-.cat-weapon-ballistic { --tone: var(--c-ballistic); }
-.cat-weapon-missile { --tone: var(--c-missile); }
-.cat-weapon-ams { --tone: var(--c-ams); }
-.cat-ammo { --tone: var(--c-ammo); }
-.cat-engine { --tone: var(--c-engine); }
-.cat-jumpjet { --tone: var(--c-jumpjet); }
-.cat-masc { --tone: var(--c-masc); }
-.cat-equipment { --tone: var(--c-equipment); }
 
 .upgrades {
   padding: 9px 11px;

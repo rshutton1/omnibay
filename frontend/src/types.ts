@@ -189,6 +189,8 @@ export interface EquipmentItem {
   tons: number
   heat: number
   hardpoint_type: string
+  /** Colour/grouping class from the engine, e.g. `weapon-energy`, `ammo-missile`. */
+  category: string
   stats: Record<string, number | string>
 }
 

@@ -67,6 +67,20 @@ def is_heat_sink(item: Optional[Item]) -> bool:
     return "heatsink" in str(item.get("name") or "").lower()
 
 
+def is_ecm(item: Optional[Item]) -> bool:
+    """ECM suites share a ctype; nothing else in the equipment list uses it."""
+    return bool(item) and item.get("ctype") == "CGECMStats"
+
+
+def ammo_class(item: Optional[Item]) -> str:
+    """Weapon class ('ballistic', 'missile', 'ams') an ammo item feeds.
+
+    Annotated onto the item by GameData at load time, since ammo entries carry
+    no class of their own; only their consuming weapons do.
+    """
+    return str((item or {}).get("ammo_class") or "")
+
+
 def is_ams_weapon(item: Optional[Item]) -> bool:
     stats = _stats(item)
     return str(stats.get("type") or "").lower() == "ams" or "ams" in str(

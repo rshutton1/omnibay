@@ -118,6 +118,21 @@ class GameData:
             chassis = str(mech.get("chassis") or "").lower()
             self.chassis_variants.setdefault(chassis, []).append(mech)
 
+        # Ammo has no weapon class of its own; the weapons that consume it do.
+        # Map each ammo type back through its consumers so ammo can be coloured
+        # and grouped like the launcher or gun it feeds.
+        ammo_class_by_type: Dict[str, str] = {}
+        for weapon in self.items_by_type.get("weapon", ()):
+            stats = weapon.get("stats") or {}
+            hp = str(stats.get("type") or "").lower()
+            for key in ("ammoType", "artemisAmmoType"):
+                ammo_type = str(stats.get(key) or "").lower()
+                if ammo_type and ammo_type != "none" and hp:
+                    ammo_class_by_type.setdefault(ammo_type, hp)
+        for ammo in self.items_by_type.get("ammo", ()):
+            ammo_type = str((ammo.get("stats") or {}).get("type") or "").lower()
+            ammo["ammo_class"] = ammo_class_by_type.get(ammo_type, "")
+
         self.engines_by_rating: Dict[int, List[Dict[str, Any]]] = {}
         for engine in self.items_by_type.get("engine", ()):
             rating = int(engine.get("stats", {}).get("rating") or 0)
