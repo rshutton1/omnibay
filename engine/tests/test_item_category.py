@@ -4,7 +4,7 @@ Ammo takes the class of the weapon that fires it and ECM stands apart from
 generic equipment, so the slot grid can colour them the way players already
 read them elsewhere.
 """
-from omnibay.calculate import item_category
+from omnibay.calculate import catalogue_group, item_category
 
 
 def _by_name(data, name):
@@ -41,3 +41,13 @@ def test_ecm_has_its_own_category(data):
 def test_weapons_are_split_by_hardpoint(data):
     assert item_category(_by_name(data, "AutoCannon20")) == "weapon-ballistic"
     assert item_category(_by_name(data, "MediumLaser")) == "weapon-energy"
+
+
+def test_catalogue_groups_follow_weapon_class_and_equipment_role(data):
+    assert catalogue_group(_by_name(data, "MediumLaser")) == "energy"
+    assert catalogue_group(_by_name(data, "ClanLRMAmmo")) == "missile"
+    assert catalogue_group(_by_name(data, "ClanECM")) == "ecm"
+    assert catalogue_group(_by_name(data, "BeagleProbe")) == "sensor"
+    assert catalogue_group(_by_name(data, "TargetingComputerMkI")) == "sensor"
+    assert catalogue_group(_by_name(data, "CASE")) == "misc"
+    assert catalogue_group(_by_name(data, "MASCMkI")) == "masc"

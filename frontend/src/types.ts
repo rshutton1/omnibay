@@ -191,6 +191,8 @@ export interface EquipmentItem {
   hardpoint_type: string
   /** Colour/grouping class from the engine, e.g. `weapon-energy`, `ammo-missile`. */
   category: string
+  /** Shelf in the catalogue: weapon/ammo class, or `ecm` / `sensor` / `misc` for equipment. */
+  group: string
   stats: Record<string, number | string>
 }
 

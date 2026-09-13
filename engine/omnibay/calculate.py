@@ -519,6 +519,30 @@ def item_category(item: Dict[str, Any]) -> str:
     return "equipment"
 
 
+SENSOR_CTYPES = ("CTargetingComputerStats", "CBAPStats", "CClanBAPStats", "CClanLightBAPStats")
+
+
+def catalogue_group(item: Dict[str, Any]) -> str:
+    """Shelf an item sits on in the equipment catalogue.
+
+    Weapons and ammo shelve by weapon class; equipment splits into ECM, sensor
+    (probes and targeting computers) and misc, the way MechDB's warehouse
+    lays them out. Everything else is one shelf per item type.
+    """
+    if I.is_weapon(item):
+        return I.equipment_hardpoint_type(item) or "other"
+    if I.is_ammo(item):
+        return I.ammo_class(item) or "other"
+    if I.is_ecm(item):
+        return "ecm"
+    if item.get("ctype") in SENSOR_CTYPES:
+        return "sensor"
+    item_type = str(item.get("item_type") or "")
+    if item_type == "module":
+        return "misc"
+    return item_type or "other"
+
+
 def _describe_item(data: GameData, item: Dict[str, Any]) -> Dict[str, Any]:
     return {
         "category": item_category(item),

@@ -64,6 +64,68 @@ const visible = computed(() => {
     .sort((a, b) => a.display_name.localeCompare(b.display_name))
 })
 
+/**
+ * Shelves within a tab, in MechDB's order. Weapon and ammo shelves are keyed
+ * by hardpoint class and only appear when the mech can mount that class, so
+ * the list answers "what can this mech carry?" rather than listing the game.
+ */
+const SHELVES: Record<string, { key: string; label: string; tone: string; hardpoint?: string }[]> = {
+  weapon: [
+    { key: 'energy', label: 'Energy', tone: 'cat-weapon-energy', hardpoint: 'energy' },
+    { key: 'ballistic', label: 'Ballistic', tone: 'cat-weapon-ballistic', hardpoint: 'ballistic' },
+    { key: 'missile', label: 'Missile', tone: 'cat-weapon-missile', hardpoint: 'missile' },
+    { key: 'ams', label: 'AMS', tone: 'cat-weapon-ams', hardpoint: 'ams' },
+  ],
+  ammo: [
+    { key: 'ballistic', label: 'Ballistic ammo', tone: 'cat-weapon-ballistic', hardpoint: 'ballistic' },
+    { key: 'missile', label: 'Missile ammo', tone: 'cat-weapon-missile', hardpoint: 'missile' },
+    { key: 'ams', label: 'AMS ammo', tone: 'cat-weapon-ams', hardpoint: 'ams' },
+  ],
+  module: [
+    { key: 'ecm', label: 'ECM', tone: 'cat-ecm' },
+    { key: 'sensor', label: 'Sensor', tone: 'cat-equipment' },
+    { key: 'misc', label: 'Misc', tone: 'cat-equipment' },
+  ],
+  engine: [{ key: 'engine', label: 'Engines', tone: 'cat-engine' }],
+  jumpjet: [{ key: 'jumpjet', label: 'Jump jets', tone: 'cat-jumpjet' }],
+  masc: [{ key: 'masc', label: 'MASC', tone: 'cat-masc' }],
+}
+
+function mechHasHardpoint(type: string): boolean {
+  return Object.values(props.result.components).some(
+    (component) => (component.hardpoint_capacity[type] ?? 0) > 0,
+  )
+}
+
+const shelves = computed(() => {
+  const defs = SHELVES[category.value] ?? [{ key: 'other', label: 'Other', tone: 'cat-equipment' }]
+  const byGroup = new Map<string, EquipmentItem[]>()
+  for (const item of visible.value) {
+    const list = byGroup.get(item.group) ?? []
+    list.push(item)
+    byGroup.set(item.group, list)
+  }
+  return defs
+    .filter((shelf) => !shelf.hardpoint || mechHasHardpoint(shelf.hardpoint))
+    .map((shelf) => ({ ...shelf, items: byGroup.get(shelf.key) ?? [] }))
+    .filter((shelf) => shelf.items.length)
+})
+
+/** Shelves the user has folded shut. Keyed by tab so folding ammo leaves weapons alone. */
+const collapsed = ref(new Set<string>())
+
+function shelfId(key: string): string {
+  return `${category.value}:${key}`
+}
+
+function toggleShelf(key: string) {
+  const id = shelfId(key)
+  const next = new Set(collapsed.value)
+  if (next.has(id)) next.delete(id)
+  else next.add(id)
+  collapsed.value = next
+}
+
 /** Ordered so the chips read left to right like the mirrored mech diagram. */
 const componentOrder = [
   'right_arm',
@@ -135,40 +197,59 @@ function toneFor(item: EquipmentItem): string {
         <input v-model="search" type="search" placeholder="Filter…" />
       </div>
 
-      <ul class="items" @mouseleave="emit('hover-targets', [])">
-        <li
-          v-for="item in visible"
-          :key="item.id"
-          :class="[toneFor(item), { draggable: targetsFor(item).length }]"
-          @mouseenter="emit('hover-targets', targetsFor(item))"
-          @mousemove="onRowHover($event, item)"
-          @mouseleave="emit('hover-weapon', null, 0, 0)"
-          @pointerdown="onRowPointerDown($event, item)"
-        >
-          <div class="row">
-            <span class="spine" />
-            <span class="name">{{ item.display_name }}</span>
-            <span class="stats mono faint">{{ item.slots }}s · {{ item.tons }}t</span>
-          </div>
-          <div class="targets">
-            <button
-              v-for="name in componentOrder"
-              :key="name"
-              class="chip mono"
-              :disabled="!fitsIn(item, name)"
-              :title="
-                fitsIn(item, name)
-                  ? `Install in ${result.components[name].label}`
-                  : `Will not fit in ${result.components[name].label}`
-              "
-              @click="emit('install', name, item.id)"
+      <div class="shelves" @mouseleave="emit('hover-targets', [])">
+        <section v-for="shelf in shelves" :key="shelf.key" class="shelf" :class="shelf.tone">
+          <button
+            class="shelf-head"
+            :class="{ folded: collapsed.has(shelfId(shelf.key)) }"
+            :aria-expanded="!collapsed.has(shelfId(shelf.key))"
+            @click="toggleShelf(shelf.key)"
+          >
+            <span class="chevron" aria-hidden="true">▾</span>
+            <span class="shelf-label">{{ shelf.label }}</span>
+            <span class="shelf-count mono">{{ shelf.items.length }}</span>
+            <span class="shelf-col mono">slots</span>
+            <span class="shelf-col mono">tons</span>
+          </button>
+          <ul v-show="!collapsed.has(shelfId(shelf.key))" class="items">
+            <li
+              v-for="item in shelf.items"
+              :key="item.id"
+              :class="[toneFor(item), { draggable: targetsFor(item).length }]"
+              @mouseenter="emit('hover-targets', targetsFor(item))"
+              @mousemove="onRowHover($event, item)"
+              @mouseleave="emit('hover-weapon', null, 0, 0)"
+              @pointerdown="onRowPointerDown($event, item)"
             >
-              {{ result.components[name].abbreviation }}
-            </button>
-          </div>
-        </li>
-        <li v-if="!visible.length" class="none faint">Nothing matches.</li>
-      </ul>
+              <div class="row">
+                <span class="spine" />
+                <span class="name">{{ item.display_name }}</span>
+                <span class="stat mono faint">{{ item.slots }}</span>
+                <span class="stat mono faint">{{ item.tons }}</span>
+              </div>
+              <div class="targets">
+                <button
+                  v-for="name in componentOrder"
+                  :key="name"
+                  class="chip mono"
+                  :disabled="!fitsIn(item, name)"
+                  :title="
+                    fitsIn(item, name)
+                      ? `Install in ${result.components[name].label}`
+                      : `Will not fit in ${result.components[name].label}`
+                  "
+                  @click="emit('install', name, item.id)"
+                >
+                  {{ result.components[name].abbreviation }}
+                </button>
+              </div>
+            </li>
+          </ul>
+        </section>
+        <p v-if="!shelves.length" class="none faint">
+          {{ visible.length ? 'This mech has no hardpoints for these.' : 'Nothing matches.' }}
+        </p>
+      </div>
     </section>
 
     <section class="panel clip upgrades">
@@ -235,15 +316,68 @@ function toneFor(item: EquipmentItem): string {
   font-size: 11px;
 }
 
+.shelves {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 5px;
+  max-height: 620px;
+  overflow-y: auto;
+}
+/* Solid class-coloured bar with dark text, as MechDB's warehouse headers.
+   The columns line up with the slots/tons figures in the rows below. */
+.shelf-head {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 10px 1fr auto 30px 34px;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 6px 3px 4px;
+  border: none;
+  border-radius: 2px;
+  background: var(--tone, var(--c-equipment));
+  color: var(--c-slot-text-dark);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: left;
+  cursor: pointer;
+}
+/* Outranks the global button:hover, which would otherwise dim the bar. */
+.shelf-head:hover:not(:disabled) {
+  background: var(--tone, var(--c-equipment));
+  border: none;
+  filter: brightness(1.08);
+}
+.chevron {
+  font-size: 10px;
+  line-height: 1;
+  transition: transform 0.12s;
+}
+.shelf-head.folded .chevron {
+  transform: rotate(-90deg);
+}
+.shelf-count {
+  font-weight: 400;
+  font-size: 9px;
+  opacity: 0.7;
+}
+.shelf-col {
+  font-weight: 400;
+  font-size: 8.5px;
+  letter-spacing: 0;
+  text-transform: none;
+  text-align: right;
+  opacity: 0.75;
+}
 .items {
   list-style: none;
   margin: 0;
-  padding: 5px;
+  padding: 3px 0 0;
   display: flex;
   flex-direction: column;
   gap: 3px;
-  max-height: 620px;
-  overflow-y: auto;
 }
 .items li {
   background: var(--bg-cell);
@@ -274,9 +408,17 @@ function toneFor(item: EquipmentItem): string {
   white-space: nowrap;
   color: var(--tone, var(--text));
 }
-.stats {
+.stat {
   font-size: 9.5px;
   white-space: nowrap;
+  text-align: right;
+  flex: none;
+}
+.stat:nth-last-child(2) {
+  width: 30px;
+}
+.stat:last-child {
+  width: 34px;
 }
 .targets {
   display: flex;
@@ -309,7 +451,8 @@ function toneFor(item: EquipmentItem): string {
   border-style: dashed;
 }
 .none {
-  background: none;
+  margin: 0;
+  padding: 6px 4px;
   font-size: 11px;
 }
 
