@@ -6,6 +6,7 @@ import EngineBoot from '@/components/EngineBoot.vue'
 import EquipmentRail from '@/components/EquipmentRail.vue'
 import SlotColumn from '@/components/SlotColumn.vue'
 import StatsRail from '@/components/StatsRail.vue'
+import ToolsMenu, { type ToolAction } from '@/components/ToolsMenu.vue'
 import WeaponTooltipCard from '@/components/WeaponTooltip.vue'
 import { engineIsReady } from '@/engine/runtime'
 import { beginDrag, type DragPayload } from '@/composables/useEquipmentDrag'
@@ -37,6 +38,26 @@ const LAYOUT = [
 ]
 
 const hasRearArmor = (name: string) => name.endsWith('_torso')
+
+/** Whole-build operations, in MechDB's order so the menu reads familiarly. */
+const tools: ToolAction[] = [
+  { key: 'max-armor', label: 'Max armor', hint: 'fill every location', run: () => store.maximiseArmor() },
+  { key: 'strip-armor', label: 'Strip armor', hint: 'armor to zero', run: () => store.stripArmor() },
+  {
+    key: 'strip-equipment',
+    label: 'Strip equipment',
+    hint: 'keep engine and armor',
+    run: () => store.stripEquipment(),
+  },
+  { key: 'strip-all', label: 'Strip all', hint: 'bare chassis', run: () => store.stripAll() },
+  {
+    key: 'stock',
+    label: 'Stock loadout',
+    hint: 'factory build',
+    divider: true,
+    run: () => store.resetToStock(),
+  },
+]
 
 async function copyCode() {
   const code = await store.exportCode()
@@ -182,9 +203,7 @@ const armorPct = computed(() =>
         <RouterLink :to="`/skills/${store.mech.name}`" class="skills-link">
           Skills<span v-if="store.skillPointsSpent" class="mono"> {{ store.skillPointsSpent }}</span>
         </RouterLink>
-        <button @click="store.maximiseArmor()">Max armor</button>
-        <button @click="store.stripArmor()">Strip</button>
-        <button @click="store.resetToStock()">Stock</button>
+        <ToolsMenu :actions="tools" />
         <button class="primary" @click="copyCode()">
           {{ copied ? 'Copied' : 'Copy code' }}
         </button>

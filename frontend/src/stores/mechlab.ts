@@ -207,6 +207,29 @@ export const useMechlabStore = defineStore('mechlab', {
       this.recalculate()
     },
 
+    /**
+     * Remove everything the pilot bolted on, keeping the engine (and the heat
+     * sinks inside it), armor and upgrades — a clean chassis to build on, as
+     * MechDB's Strip Equipment leaves it.
+     */
+    stripEquipment() {
+      if (!this.build) return
+      const engines = new Set(
+        this.equipment.filter((item) => item.item_type === 'engine').map((item) => item.id),
+      )
+      for (const component of Object.values(this.build.components)) {
+        component.items = component.items.filter((entry) => engines.has(entry.item_id))
+      }
+      this.recalculate()
+    },
+
+    /** Bare chassis: no equipment and no armor. */
+    stripAll() {
+      if (!this.build) return
+      this.stripEquipment()
+      this.stripArmor()
+    },
+
     setUpgrade(category: 'armor' | 'structure' | 'heatsinks', itemId: number) {
       if (!this.build) return
       this.build.upgrades[category] = itemId
