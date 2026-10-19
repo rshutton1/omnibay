@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import DragGhost from '@/components/DragGhost.vue'
 import EngineBoot from '@/components/EngineBoot.vue'
 import EquipmentRail from '@/components/EquipmentRail.vue'
@@ -16,17 +16,44 @@ import { useMechlabStore } from '@/stores/mechlab'
 const props = defineProps<{ reference: string }>()
 const store = useMechlabStore()
 const router = useRouter()
+const route = useRoute()
 
 const codeInput = ref('')
 const importError = ref<string | null>(null)
 const copied = ref(false)
+const linkCopied = ref(false)
 /** Components an equipment row is currently offering as a destination. */
 const targets = ref<string[]>([])
 
-onMounted(() => store.loadMech(props.reference))
+/**
+ * Open the lab, from a share link when the URL carries one.
+ *
+ * The share query is consumed and dropped from the address bar: once the
+ * build is edited the link would no longer describe it.
+ */
+async function open(reference: string) {
+  const code = typeof route.query.code === 'string' ? route.query.code : ''
+  if (!code) {
+    await store.loadMech(reference)
+    return
+  }
+  importError.value = null
+  const skills = typeof route.query.s === 'string' ? route.query.s : ''
+  const name = await store.loadShared(code, skills)
+  if (name) {
+    router.replace(`/mechlab/${name}`)
+  } else {
+    const reason = store.error
+    await store.loadMech(reference, true)
+    importError.value = `Could not open the shared build: ${reason}`
+    router.replace(`/mechlab/${reference}`)
+  }
+}
+
+onMounted(() => open(props.reference))
 watch(
-  () => props.reference,
-  (reference) => store.loadMech(reference),
+  () => [props.reference, route.query.code],
+  () => open(props.reference),
 )
 
 // Anatomical and mirrored, the way every mech lab draws it: you are facing the
@@ -68,6 +95,22 @@ async function copyCode() {
     setTimeout(() => (copied.value = false), 1600)
   } catch {
     // Clipboard permission denied; the code is still shown for manual copy.
+  }
+}
+
+async function copyLink() {
+  const query = await store.shareQuery()
+  if (!query || !store.mech) return
+  // Encoded by hand: the router leaves `|`, `[` and friends raw, and chat apps
+  // tend to cut a pasted link short at those.
+  const { href } = router.resolve({ name: 'mechlab', params: { reference: store.mech.name } })
+  const link = `${new URL(href, window.location.href)}?${new URLSearchParams(query)}`
+  try {
+    await navigator.clipboard.writeText(link)
+    linkCopied.value = true
+    setTimeout(() => (linkCopied.value = false), 1600)
+  } catch {
+    // Clipboard permission denied; nothing sensible to fall back to here.
   }
 }
 
@@ -204,6 +247,9 @@ const armorPct = computed(() =>
           Skills<span v-if="store.skillPointsSpent" class="mono"> {{ store.skillPointsSpent }}</span>
         </RouterLink>
         <ToolsMenu :actions="tools" />
+        <button title="Copy a link that opens this build, skills included" @click="copyLink()">
+          {{ linkCopied ? 'Link copied' : 'Share link' }}
+        </button>
         <button class="primary" @click="copyCode()">
           {{ copied ? 'Copied' : 'Copy code' }}
         </button>

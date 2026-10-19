@@ -6,8 +6,24 @@
 import { defineStore } from 'pinia'
 import { engine } from '@/engine/client'
 import { bootEngine } from '@/engine/runtime'
+import { decodeSkills, encodeSkills } from '@/share'
 import type { BuildState, CalcResult, EquipmentItem, MechDetail, UpgradeOption } from '@/types'
 import type { SkillTree } from '@/types.skills'
+
+/** Every skill node name. The graph is the same for every mech, so fetch it once. */
+let skillNodeNames: Promise<string[]> | null = null
+function allSkillNodes(reference: string): Promise<string[]> {
+  if (!skillNodeNames) {
+    skillNodeNames = engine
+      .skillTree(reference, null)
+      .then((tree) => tree.categories.flatMap((category) => category.nodes.map((node) => node.name)))
+      .catch((error) => {
+        skillNodeNames = null
+        throw error
+      })
+  }
+  return skillNodeNames
+}
 
 interface State {
   mech: MechDetail | null
@@ -65,17 +81,57 @@ export const useMechlabStore = defineStore('mechlab', {
         this.mech = mech
         this.build = stock.build
         this.result = stock.result
-        if (!this.equipment.length) {
-          const catalogue = await engine.catalogue()
-          this.equipment = catalogue.equipment
-          this.upgrades = catalogue.upgrades
-        }
+        await this.ensureCatalogue()
         this.skillTree = null
       } catch (error) {
         this.error = error instanceof Error ? error.message : String(error)
       } finally {
         this.loading = false
       }
+    },
+
+    /** The equipment rail needs the catalogue however the build arrived. */
+    async ensureCatalogue() {
+      if (this.equipment.length) return
+      const catalogue = await engine.catalogue()
+      this.equipment = catalogue.equipment
+      this.upgrades = catalogue.upgrades
+    },
+
+    /**
+     * Open a build from a share link. Returns the mech name, or null (with
+     * `error` set) when the code will not import.
+     *
+     * Skills that no longer fit the skill graph are dropped silently: the
+     * loadout is the part worth rescuing.
+     */
+    async loadShared(code: string, skills = '') {
+      await bootEngine()
+      const name = await this.importCode(code)
+      if (!name) return null
+      try {
+        await this.ensureCatalogue()
+        if (skills) {
+          const selection = decodeSkills(await allSkillNodes(name), skills)
+          if (selection?.length) await this.applySkills(selection)
+        }
+      } catch (error) {
+        this.error = error instanceof Error ? error.message : String(error)
+      }
+      return name
+    },
+
+    /** Query parameters that reproduce this build, skills included. */
+    async shareQuery() {
+      if (!this.mech || !this.build) return null
+      const code = await this.exportCode()
+      if (!code) return null
+      const query: Record<string, string> = { code }
+      const selected = this.build.skills ?? []
+      if (selected.length) {
+        query.s = encodeSkills(await allSkillNodes(this.mech.name), selected)
+      }
+      return query
     },
 
     async loadSkillTree() {
@@ -273,6 +329,7 @@ export const useMechlabStore = defineStore('mechlab', {
         this.build = response.build
         this.result = response.result
         this.exportedCode = code
+        this.skillTree = null
         return response.mech.name
       } catch (error) {
         this.error = error instanceof Error ? error.message : String(error)
