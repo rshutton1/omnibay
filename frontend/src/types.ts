@@ -171,6 +171,12 @@ export interface CalcResult {
     included_heat_sinks: number
     heat_sink_capacity: number
   } | null
+  movement: {
+    /** Top speed in kph before quirks and pilot skills. */
+    base_speed: number
+    speed: number
+    reverse_speed: number
+  }
   jump_jets: { installed: number; limit: number }
   components: Record<string, ComponentResult>
   quirks: Quirk[]

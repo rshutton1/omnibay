@@ -400,12 +400,52 @@ def calculate_build(
             "alpha_damage": _round(alpha, 3),
             "ammo_shots": _round(ammo_shots, 0),
         },
+        "movement": _movement(definition, engine, max_tons, quirk_lookup),
         "engine": _describe_engine(engine),
         "jump_jets": {"installed": jump_jets, "limit": jump_jet_limit},
         "components": components,
         "quirks": quirks,
         "warnings": warnings,
         "valid": not warnings,
+    }
+
+
+def _movement(
+    definition: Dict[str, Any],
+    engine: Optional[Dict[str, Any]],
+    max_tons: float,
+    quirk_lookup: Dict[str, float],
+) -> Dict[str, Any]:
+    """Top speed in kph, forward and reverse.
+
+    Speed is the engine rating spread over the chassis' tonnage, scaled by the
+    chassis' own `MaxMovementSpeed`. Reverse is that times the chassis'
+    `ReverseSpeedMultiplier`. Quirks and pilot skills (Speed Tweak) arrive as
+    `mechtopspeed_multiplier`, which applies to both directions, and
+    `reversespeed_multiplier`, which applies to reverse only.
+    """
+    movement = definition.get("movement") or {}
+    rating = I.engine_rating(engine) if engine else 0
+    base_speed = (
+        finite_number(movement.get("MaxMovementSpeed")) * rating / max_tons
+        if max_tons and rating
+        else 0.0
+    )
+    reverse_ratio = finite_number(movement.get("ReverseSpeedMultiplier"))
+    top_speed_multiplier = quirk_multiplier(quirk_lookup, ["mechtopspeed_multiplier"])
+
+    forward = base_speed * top_speed_multiplier
+    reverse = (
+        base_speed
+        * reverse_ratio
+        * top_speed_multiplier
+        * quirk_multiplier(quirk_lookup, ["reversespeed_multiplier"])
+    )
+
+    return {
+        "base_speed": _round(base_speed, 2),
+        "speed": _round(forward, 2),
+        "reverse_speed": _round(reverse, 2),
     }
 
 

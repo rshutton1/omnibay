@@ -52,7 +52,11 @@ export const useMechlabStore = defineStore('mechlab', {
      * skill selection. Pass `force` to deliberately start over.
      */
     async loadMech(reference: string, force = false) {
-      if (!force && this.mech?.name === reference && this.build) return
+      // The engine resolves references case-insensitively, so a link or bookmark that
+      // differs only in case is the same mech; comparing exactly would reload the stock
+      // build here and silently discard the pilot's skills.
+      const sameMech = this.mech?.name?.toLowerCase() === reference.toLowerCase()
+      if (!force && sameMech && this.build) return
       this.loading = true
       this.error = null
       this.exportedCode = null

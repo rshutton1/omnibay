@@ -38,7 +38,16 @@ const alphasToOverheat = computed(() => {
   return props.result.heat.capacity / heat
 })
 
-const general = computed(() => [
+const general = computed<{ label: string; value: string; hint?: string }[]>(() => [
+  {
+    label: 'Speed',
+    value: `${props.result.movement.speed.toFixed(1)} / ${props.result.movement.reverse_speed.toFixed(1)}`,
+    // Quirks and Speed Tweak move this off the chassis' own figure, so say what that was
+    hint:
+      props.result.movement.speed === props.result.movement.base_speed
+        ? 'forward / reverse kph'
+        : `forward / reverse kph, base ${props.result.movement.base_speed.toFixed(1)}`,
+  },
   { label: 'Engine', value: props.result.engine ? `${props.result.engine.display_name}` : '—' },
   {
     label: 'Heat sinks',
@@ -112,7 +121,7 @@ const firepower = computed(() => [
       <dl>
         <template v-for="row in general" :key="row.label">
           <dt>{{ row.label }}</dt>
-          <dd class="mono">{{ row.value }}</dd>
+          <dd class="mono" :title="row.hint">{{ row.value }}</dd>
         </template>
       </dl>
     </section>
