@@ -23,7 +23,7 @@ defineProps<{ result: CalcResult }>()
       <span>alpha</span>
     </div>
     <div class="pill">
-      <strong>{{ result.heat.alpha_heat.toFixed(1) }}</strong>
+      <strong>{{ result.weapons.alpha_heat.toFixed(1) }}</strong>
       <span>heat</span>
     </div>
     <div class="pill">

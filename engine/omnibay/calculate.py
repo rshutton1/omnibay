@@ -21,6 +21,7 @@ from omnibay.constants import (
     MOVABLE_UPGRADE_SLOT_IDS,
 )
 from omnibay import weapons as W
+from omnibay import weapon_stats as WS
 from omnibay.quirks import (
     durability_skill_final_value,
     finite_number,
@@ -56,6 +57,8 @@ def calculate_build(
     item_tonnage = I.item_tons(fixed_engine) if fixed_engine else 0.0
     heat = 0.0
     alpha = 0.0
+    # Kept so the rate metrics can time every weapon once the heat system is known.
+    weapon_items: List[Dict[str, Any]] = []
     ammo_shots = 0.0
     armor_points = 0
     installed_heat_sinks = 0
@@ -148,6 +151,7 @@ def calculate_build(
                 usage["hardpoints"][mount] = usage["hardpoints"].get(mount, 0) + 1
             if I.is_weapon(item) and not I.is_ams_weapon(item):
                 alpha += W.weapon_total_damage(data, item, True, modules)
+                weapon_items.append(item)
             if I.is_ammo(item):
                 ammo_shots += W.effective_ammo_shots(item, quirks)
             if I.is_heat_sink(item):
@@ -197,6 +201,7 @@ def calculate_build(
                 usage["hardpoints"][mount] = usage["hardpoints"].get(mount, 0) + 1
             if I.is_weapon(item) and not I.is_ams_weapon(item):
                 alpha += W.weapon_total_damage(data, item, True, modules)
+                weapon_items.append(item)
             if I.is_ammo(item):
                 ammo_shots += W.effective_ammo_shots(item, quirks)
             if I.is_heat_sink(item):
@@ -400,6 +405,9 @@ def calculate_build(
             "alpha_damage": _round(alpha, 3),
             "ammo_shots": _round(ammo_shots, 0),
         },
+        "weapons": _weapon_metrics(
+            data, weapon_items, quirks, modules, heat_dissipation, heat_capacity
+        ),
         "movement": _movement(definition, engine, max_tons, quirk_lookup),
         "engine": _describe_engine(engine),
         "jump_jets": {"installed": jump_jets, "limit": jump_jet_limit},
@@ -407,6 +415,63 @@ def calculate_build(
         "quirks": quirks,
         "warnings": warnings,
         "valid": not warnings,
+    }
+
+
+def _weapon_metrics(
+    data: GameData,
+    weapon_items: List[Dict[str, Any]],
+    quirks: List[Dict[str, Any]],
+    modules: List[Dict[str, Any]],
+    dissipation: float,
+    heat_capacity: float,
+) -> Dict[str, Any]:
+    """How fast the loadout puts out damage, and whether it can keep that up.
+
+    `dps` is every weapon firing the moment it comes off cooldown, which is only
+    sustainable while the heat sinks keep up. Heat efficiency is the share of the
+    loadout's heat per second the mech can actually dissipate, so `sustained_dps`
+    is `dps` scaled by it. Ported from `mechSummaryWeaponMetrics` in the
+    reference client.
+
+    Alpha heat here is the quirk-aware, weapons-only total — unlike
+    `heat.alpha_heat`, which counts raw item heat across the whole build and is
+    held to reference parity.
+    """
+    alpha_heat = 0.0
+    dps = 0.0
+    hps = 0.0
+
+    for item in weapon_items:
+        expected = WS.weapon_expected_cooldown(item, quirks, modules)
+        cycle = max(
+            WS.MINIMUM_CYCLE_SECONDS,
+            expected if expected is not None else WS.weapon_timing(item, quirks, modules)["cycle"],
+        )
+        item_heat = WS.weapon_heat(data, item, quirks)
+        alpha_heat += item_heat
+        dps += W.weapon_total_damage(data, item, True, modules) / cycle
+        # Machine guns, rotaries and beam lasers state their heat per second
+        # already, so dividing by the cycle would count the cooldown twice.
+        hps += item_heat if WS.is_continuous_per_second(item) else item_heat / cycle
+
+    # A loadout that generates no more heat than it sheds runs flat out. The
+    # epsilon keeps one that matches its cooling exactly from reading 99.9%.
+    efficiency = (
+        100.0
+        if hps <= dissipation + 0.0001
+        else max(0.0, min(100.0, dissipation / hps * 100))
+    )
+
+    return {
+        "alpha_heat": _round(alpha_heat, 3),
+        "alpha_heat_percent": (
+            _round(alpha_heat / heat_capacity * 100, 1) if heat_capacity > 0 else 0.0
+        ),
+        "dps": _round(dps, 2),
+        "sustained_dps": _round(dps * efficiency / 100, 2),
+        "hps": _round(hps, 2),
+        "heat_efficiency": _round(efficiency, 1),
     }
 
 

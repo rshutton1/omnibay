@@ -161,6 +161,19 @@ export interface CalcResult {
     capacity: number
   }
   firepower: { alpha_damage: number; ammo_shots: number }
+  weapons: {
+    /** Quirk-aware and weapons-only, unlike `heat.alpha_heat`. */
+    alpha_heat: number
+    /** That alpha as a share of heat capacity. */
+    alpha_heat_percent: number
+    /** Every weapon firing the moment it comes off cooldown. */
+    dps: number
+    /** `dps` throttled to what the heat sinks can carry. */
+    sustained_dps: number
+    hps: number
+    /** Share of `hps` the mech can dissipate, 0-100. */
+    heat_efficiency: number
+  }
   engine: {
     id: number
     display_name: string

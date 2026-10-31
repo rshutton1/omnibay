@@ -33,7 +33,7 @@ const armorPercent = computed(() =>
 
 /** Alphas you can fire before the heat scale fills. */
 const alphasToOverheat = computed(() => {
-  const heat = props.result.heat.alpha_heat
+  const heat = props.result.weapons.alpha_heat
   if (heat <= 0) return null
   return props.result.heat.capacity / heat
 })
@@ -60,9 +60,23 @@ const general = computed<{ label: string; value: string; hint?: string }[]>(() =
   { label: 'Chassis', value: props.result.mech.is_omnimech ? 'Omnimech' : 'Battlemech' },
 ])
 
-const firepower = computed(() => [
+const firepower = computed<{ label: string; value: string; hint?: string }[]>(() => [
   { label: 'Alpha damage', value: props.result.firepower.alpha_damage.toFixed(1) },
-  { label: 'Alpha heat', value: props.result.heat.alpha_heat.toFixed(1) },
+  {
+    label: 'DPS',
+    value: `${props.result.weapons.sustained_dps.toFixed(1)} / ${props.result.weapons.dps.toFixed(1)}`,
+    hint: 'sustained / maximum — sustained is the maximum throttled to what the heat sinks carry',
+  },
+  {
+    label: 'Alpha heat',
+    value: `${props.result.weapons.alpha_heat.toFixed(1)} (${props.result.weapons.alpha_heat_percent.toFixed(0)}%)`,
+    hint: 'one alpha strike, and the share of heat capacity it fills',
+  },
+  {
+    label: 'Heat efficiency',
+    value: `${props.result.weapons.heat_efficiency.toFixed(0)}%`,
+    hint: `${props.result.weapons.hps.toFixed(2)} heat/s generated against ${props.result.heat.dissipation.toFixed(2)} dissipated`,
+  },
   { label: 'Heat capacity', value: props.result.heat.capacity.toFixed(1) },
   { label: 'Dissipation', value: `${props.result.heat.dissipation.toFixed(2)} /s` },
   {
@@ -131,7 +145,7 @@ const firepower = computed(() => [
       <dl>
         <template v-for="row in firepower" :key="row.label">
           <dt>{{ row.label }}</dt>
-          <dd class="mono">{{ row.value }}</dd>
+          <dd class="mono" :title="row.hint">{{ row.value }}</dd>
         </template>
       </dl>
     </section>
